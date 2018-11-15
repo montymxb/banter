@@ -1,5 +1,19 @@
 # TODO Banter_Visualizer_C
 
+## Table of Contents
+- [Goals](#goals)
+- [Method to Achieve Goals](#method-to-achieve-goals)
+- [Expected Use Cases](#expected-use-cases)
+- [Flow Layout](#flow-layout)
+- [Program 1 (cli)](#program-1-cli)
+  - [Core](#core)
+  - [Command Line Interface](#command-line-interface)
+  - [Reader](#reader)
+  - [Mapper](#mapper)
+  - [Outputter](#outputter)
+- [Program 2 (renderer)](#program-2-renderer)
+  - [Renderer](#renderer)
+
 ## GOALS
   1. be portable (windows,mac,linux,etc.)
   2. be modifiable (well modularized codebase)
@@ -8,15 +22,14 @@
   5. have a SMALL footprint (both in binary & in memory)
   6. Be accessible to general users
   7. Provide a graphical interface to show graphical component, and HEX component in
-  8. ~~ Provide signature analysis based on mappings
+  8. Allow signature analysis based on mappings
 
 ## METHOD TO ACHIEVE GOALS
-  1. Write it in C90, know how to make this xcompile fairly easily
-  2. write interface, renderer, mapper, reader, UI separately
-  3. Use direct open,read,close to speed up access
-  5. Graphical interface will have to use native implmentation, which is platform dependent...
-  6. Extended signature analysis will need to use some sort of an extensible component
-    - User can provide their own signature analysis (maybe by using latria??)
+  1. Write it in C90 to squeeze for performance
+  2. Capable of cross-compiling on other platforms from a single C90 code-base
+  3. Write interface, renderer, mapper, reader together into CLI
+  4. UI will be in a separate binary, built strictly for the UI aspect
+  5. Signature analysis should be extensible for users to provide their own mapping and analysis functionality
 
 ## EXPECTED USE CASES
   1. Static analysis
@@ -25,71 +38,60 @@
   4. Data Agnostic determination
   5. In conjunction with other tools
 
-## FINAL IMPACT
-  1. Something everyone can use to profile their systems, programs, environments effectively & quickly
-
 ## Flow Layout
 
-/prog1/
-[ CLI ]
-wraps access to the
-[ CORE ] contains [ READER ] and [ MAPPER ]
-sends data to
-[ OUT ]
-/prog2/
-[ RENDERER ]
+/// prog1 ///<br>
+[ CLI ]<br>
+v<br>
+[ CORE ] > [ READER ] > [ MAPPER ]<br>
+v<br>
+[ OUT ]<br>
+/// prog2 ///<br>
+[ RENDERER ]<br>
 
 ## Program 1 (cli)
-
-### Command Line Interface [CLI]
+The cli program will handle requests for render ready data for a given file, process or directory. Every request will be supplied with arguments to setup the environment of the cli to read, map, analyze and return data to the requesting process.
+### Core
+  - wraps the cli, reader, mapper and outputter
+  - orchestrates the iteraction between these 4 subcomponents
+### Command Line Interface
   - command line args to start program in a given mode with given args (such as static, dynamic, refresh times, etc.)
   - Args can be passed at startup, and may be passed by ARG=VALUE during runtime
   - CLI will work by starting with args, reading it's first frame, and waiting for subsequent args
   - args (first is default)
     - reads from a file or process ID#
-    - mode=[file/process/dir?(visualize all in a folder maybe?)]
+    - mode=[file/process/dir(to visualize folder structure, possibly all files inside)]
     - output=[stdout/file]
-    - loadmaps=[comma separated list of mappings from files to load by hand (method by which is unknown yet...)]
+    - loadmaps=[comma separated list of mappings from files to load by hand (file format TBD)]
     - map=[one of the location mappings by keyword]
     - color=[one of the color mappings by keyword]
     - stride=[100bytes,w/e # of bytes for each full viewing pane]
     - jumpto=[# of bytes offset to jump to in a file]
     - scale=[1, ratio of bytes shown per point, 2:1 would show 2 bytes per point for ex.]
-### Core [CORE]
-### Reader [READER]
+### Reader
   - abstraction to an underlying reader
-  - may be a physical file or an id to a process in memory
-  - Anything PAST the reader shouldn't care where this data is coming from, it's abstracted at that point
-### Mapper [MAPPER]
-  - this takes data produced by the reader and maps it into render ready data (position & color)
+  - may be a physical file, process id, or directory structure
+  - Returns a number of bytes from the reading target to the core
+### Mapper
+  - maps arbitarary data into render ready data (json with position & color)
     - may also return just a function pointer to expedite the process instead of 'double' copying data
   - this is preprocessing of the data for raw analysis
-  - Isolated from renderer & reader
   - Should allow ANY mapping method that conforms to a given interface
-  - Should be extended to allow use scripts (lua/latria??) that define a rendering approach
-  - Mapper should also include mechanisms to ANALYZE SEGMENTS!
+  - Should be extended to allow scripts that define a user customizable rendering approach
+  - Mapper should also include mechanisms to perform analysis on the data
     - This means looking for sub-signatures within what is being mapped, and properly mapping those too
-  - Maps RAW & SPECIFIC (raw is total, specific is signature based)
-### Outputter [OUT]
+### Outputter
   - Takes render ready data, and file data, and write it out with a given output method
-  - Method can be STDOUT, FILE, or perhaps a STREAM, will be abstracted (no server work either, can be a separate process if needed)
-  - Idea is this output will be in a standard format (JSON)
-  - Data can be parsed and displayed by a RENDERER
+  - Method can be STDOUT, FILE, PIPE, will be abstracted (no server work here, can be a separate process if needed)
+  - this output will be in a standard format (JSON)
+  - Data can be parsed and displayed by a conforming RENDERER
 
 ## Program 2 (Renderer)
 
-### Renderer [RENDERER]
-  - This takes the render ready data from the output, and presents it visually
+### Renderer
+  - This takes render ready data and presents it visually
   - Utilizes the system available graphics api to render
-  - Also takes data read & displays it on the screen, corresponding to what is visually present
+  - Displays prepared data on the screen in a 3 dimensional visual, corresponds to the underlying structure of the source
   - Will vary based on the system
-  - THIS DOES NOT HAVE TO BE IN C!
-  - Can write this in Python where 3D graphics should be much easier to manage...
-
-### Final question, should the program hold state, or be stateless?
-  - With state
-    - Holds it as it goes in mem
-  - Without state
-    - Returns arg data to the program, and would require that data on each call
-  -- Probably want it to hold state, so that we don't keep reloading data into mem each time??
-    - Think about it..
+  - _this does not have to be in c_
+  - Can write this in Python or alternative higher level language where a graphical UI is easier to manage and write for given platforms

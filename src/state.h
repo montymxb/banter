@@ -21,10 +21,8 @@ struct banter_state {
   2 = ???(dir)
   */
   int in_mode;
-  /* holds filename for mode = 0 */
-  char *in_fileName;
-  /* holds pid for mode = 1 */
-  int in_pid;
+  /* holds target file, process id or dir */
+  char *in_target;
 
   /* id to a registered physical mapping */
   int mapping_id;
@@ -35,9 +33,9 @@ struct banter_state {
   /* reading frame in bytes */
   long stride;
 
-  /* optional configuration option, jumps to a fixed
-  index in the current input */
-  long jumpto;
+  /* optional configuration option, offset to read from
+   in the current input */
+  long offset;
 
   /* ratio of bytes shown per point,
   ex. 2:1, 2 bytes per point */

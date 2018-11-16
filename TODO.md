@@ -66,8 +66,8 @@ The cli program will handle requests for render ready data for a given file, pro
     - map=[one of the location mappings by keyword]
     - color=[one of the color mappings by keyword]
     - stride=[100bytes,w/e # of bytes for each full viewing pane]
-    - jumpto=[# of bytes offset to jump to in a file]
-    - scale=[1, ratio of bytes shown per point, 2:1 would show 2 bytes per point for ex.]
+    - offset=[byte offset to start reading from]
+    - scale=[1, ratio of bytes shown per point, 2 would show 2 bytes per point for ex.]
 ### Reader
   - abstraction to an underlying reader
   - may be a physical file, process id, or directory structure

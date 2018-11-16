@@ -9,23 +9,25 @@
 #include "libs.h"
 #include "cli.h"
 #include "data.h"
+#include "core.h"
+#include "outputter.h"
 
 int main(int argc, char * argv[]) {
 
-    /* TODO Pass cmdline args to the cli.cpp functions,
-    these will return a 'banter_state' object, which will
-    dictate later configurations we will be setting up.
-    For the ids should add converters from char * to an
-    id, and the ability to detect by ID (enum)
-     */
-     struct banter_state *state = cli_getstate_fromargs(argc, argv);
+  /* TODO Pass cmdline args to the cli.cpp functions,
+  these will return a 'banter_state' object, which will
+  dictate later configurations we will be setting up.
+  For the ids should add converters from char * to an
+  id, and the ability to detect by ID (enum)
+  */
+  struct banter_state *state = cli_getstate_fromargs(argc, argv);
 
-     /* pass the state to the core, which will control
-     how the reader & mapper are interacted with */
-     struct banter_data *data = core_getdata_withstate(state);
+  /* pass the state to the core, which will control
+  how the reader & mapper are interacted with */
+  struct banter_data *data = core_getdata_withstate(state);
 
-     /* results are then passed to the outputter */
-     outputter_writedata_withstate(data, state);
+  /* results are then passed to the outputter */
+  outputter_writedata_withstate(data, state);
 
-    return 0;
+  return 0;
 }

@@ -5,6 +5,7 @@
 #
 
 CFLAGS+=-Isrc -std=c90 -ansi -O3 -fno-common -fshort-enums -pedantic -W -Wall -fno-common -fshort-enums -Wcast-align -Wcast-qual -Wconversion -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wpointer-arith -Wshadow
+
 EXE=banter
 CC=gcc
 SRC := $(wildcard src/*.c)

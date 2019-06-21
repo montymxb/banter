@@ -1,11 +1,11 @@
 /**
- * cli.cpp
+ * cli.c
  *
  * Holds functionality for parsing cmdline args into
  * a workable struct
  */
 
- #include "cli.h"
+#include "cli.h"
 
 
 /**
@@ -35,13 +35,43 @@ void cli_assign_inmode(struct banter_state *state, char *mode) {
 }
 
 
+/* Assigns the CLI stride */
+void cli_assign_stride(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_coloring(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_mapping(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_offset(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_outfile(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_outmode(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+void cli_assign_scale(struct banter_state *state, char *arg) {
+	/* TODO implement */
+}
+
+
 /**
  * cli_get_fresh_state
  *
  * Creates, intializes and returns a fresh banter state
  */
 struct banter_state *cli_get_fresh_state() {
-  struct banter_state *state = (banter_state *)malloc(sizeof(banter_state));
+  struct banter_state *state = (struct banter_state *)malloc(sizeof(struct banter_state));
 
   state->in_mode = -1;
   state->in_target = NULL;
@@ -51,7 +81,7 @@ struct banter_state *cli_get_fresh_state() {
   state->offset = -1;
   state->scale = -1;
   state->out_mode = -1;
-  sate->output_mapping_id = -1;
+  state->output_mapping_id = -1;
 
   return state;
 
@@ -81,55 +111,55 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
   struct banter_state *state = cli_get_fresh_state();
 
   for(x = 1; x < argc; x++) {
-    if(strcmp(args[x], "--mode") == 0 && x < argc-1) {
+    if(strcmp(argv[x], "--mode") == 0 && x < argc-1) {
       /* mode */
-      cli_assign_inmode(state, args[x+1]);
+      cli_assign_inmode(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--outmode") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--outmode") == 0 && x < argc-1) {
       /* output mode, such as stdout/file */
-      cli_assign_outmode(state, args[x+1]);
+      cli_assign_outmode(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--output") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--output") == 0 && x < argc-1) {
       /* name of output file, if out mode is 'file' */
-      cli_assign_outfile(state, args[x+1]);
+      cli_assign_outfile(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--loadmaps") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--loadmaps") == 0 && x < argc-1) {
       /* location of csv for mappings to load */
       /* TODO SET THIS UP */
 
-    } else if(strcmp(args[x], "--map") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--map") == 0 && x < argc-1) {
       /* mapping to use by keyword */
-      cli_assign_mapping(state, args[x+1]);
+      cli_assign_mapping(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--color") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--color") == 0 && x < argc-1) {
       /* coloring to use by keyword */
-      cli_assign_coloring(state, args[x+1]);
+      cli_assign_coloring(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--stride") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--stride") == 0 && x < argc-1) {
       /* # of bytes to show in each viewing pane */
-      cli_assign_stride(state, args[x+1]);
+      cli_assign_stride(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--offset") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--offset") == 0 && x < argc-1) {
       /* offset to start reading from */
-      cli_assign_offset(state, args[x+1]);
+      cli_assign_offset(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--scale") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--scale") == 0 && x < argc-1) {
       /* ratio of bytes used per point calculated */
-      cli_assign_scale(state, args[x+1]);
+      cli_assign_scale(state, argv[x+1]);
 
-    } else if(strcmp(args[x], "--target") == 0 && x < argc-1) {
+    } else if(strcmp(argv[x], "--target") == 0 && x < argc-1) {
       /* explicit target */
-      state->in_target = args[x+1];
+      state->in_target = argv[x+1];
       hasTarget = 1;
 
-    } else if(hasTarget == 0 {
+    } else if(hasTarget == 0) {
       /* implicit target */
-      state->in_target = args[x];
+      state->in_target = argv[x];
       hasTarget = 1;
 
     } else {
       /* not a valid command line arg! */
-      printf("Unrecognized command line argument '%s'!\n", args[x]);
+      printf("Unrecognized command line argument '%s'!\n", argv[x]);
       exit(1);
 
     }

@@ -5,13 +5,11 @@
 - [Method to Achieve Goals](#method-to-achieve-goals)
 - [Expected Use Cases](#expected-use-cases)
 - [Flow Layout](#flow-layout)
-- [Program 1 (cli)](#program-1-cli)
   - [Core](#core)
   - [Command Line Interface](#command-line-interface)
   - [Reader](#reader)
   - [Mapper](#mapper)
   - [Outputter](#outputter)
-- [Program 2 (renderer)](#program-2-renderer)
   - [Renderer](#renderer)
 
 ## GOALS
@@ -43,17 +41,12 @@
 /// prog1 ///<br>
 [ CLI ]<br>
 v<br>
-[ CORE ] > [ READER ] > [ MAPPER ]<br>
-v<br>
-[ OUT ]<br>
-/// prog2 ///<br>
-[ RENDERER ]<br>
+[ CORE ] > [ READER ] > [ MAPPER ] > [ ?OUTPUTTER? ] > [ RENDERER ]<br>
 
-## Program 1 (cli)
-The cli program will handle requests for render ready data for a given file, process or directory. Every request will be supplied with arguments to setup the environment of the cli to read, map, analyze and return data to the requesting process.
+The cli program will handle requests for render ready data for a given file, process or directory. Every request will be supplied with arguments to setup the environment of the cli to read, map, analyze and return data to the requesting process. Additionally it will generate an OpenGL view.
 ### Core
-  - wraps the cli, reader, mapper and outputter
-  - orchestrates the iteraction between these 4 subcomponents
+  - wraps the cli, reader, mapper, outputter, and renderer.
+  - orchestrates the interaction between these 4 subcomponents
 ### Command Line Interface
   - command line args to start program in a given mode with given args (such as static, dynamic, refresh times, etc.)
   - Args can be passed at startup, and may be passed by ARG=VALUE during runtime
@@ -80,18 +73,17 @@ The cli program will handle requests for render ready data for a given file, pro
   - Should be extended to allow scripts that define a user customizable rendering approach
   - Mapper should also include mechanisms to perform analysis on the data
     - This means looking for sub-signatures within what is being mapped, and properly mapping those too
-### Outputter
-  - Takes render ready data, and file data, and write it out with a given output method
+### Outputter (~)
+  - Conditionally takes render ready data, and file data, and write it out with a given output method
   - Method can be STDOUT, FILE, PIPE, will be abstracted (no server work here, can be a separate process if needed)
   - this output will be in a standard format (JSON)
   - Data can be parsed and displayed by a conforming RENDERER
-
-## Program 2 (Renderer)
-
+### Inputter (~)
+  - Takes prepped render data, decodes it, and renders it
+  - Used to allow a CLI on one device to send data for rendering on another device
 ### Renderer
+  - OpenGL in C, JUST the rendered output
+  - Does NOT contain interface components to alter output
   - This takes render ready data and presents it visually
   - Utilizes the system available graphics api to render
   - Displays prepared data on the screen in a 3 dimensional visual, corresponds to the underlying structure of the source
-  - Will vary based on the system
-  - _this does not have to be in c_
-  - Can write this in Python or alternative higher level language where a graphical UI is easier to manage and write for given platforms

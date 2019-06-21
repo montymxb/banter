@@ -8,6 +8,8 @@
 #ifndef __state__h_
 #define __state__h_
 
+#include "libs.h"
+
 /*
   holds the current banter state,
   essentially holds configuration information for

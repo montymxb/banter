@@ -28,6 +28,8 @@ int main(int argc, char * argv[]) {
 
   /* results are then passed to the outputter */
   outputter_writedata_withstate(data, state);
+  
+  printf("Banter is running...\n");
 
   return 0;
 }

@@ -9,6 +9,7 @@
 #define __cli__h_
 
 #include "state.h"
+#include <stdio.h>
 
 /* Returns a banter state struct from given args */
 struct banter_state *cli_getstate_fromargs(int argc, char *argv[]);

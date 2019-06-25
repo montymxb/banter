@@ -87,6 +87,28 @@ struct banter_state *cli_get_fresh_state() {
 
 }
 
+/**
+ * cli_print_usage_info
+ *
+ * Prints the usage info for banter
+ */
+void cli_print_usage_info() {
+	printf("\nbanter ([--target file.txt/folder/PID/program_name] OR [file.txt/folder/PID/program_name]) [--mode file/folder/memory] [--outmode stdout/file] [--output out.txt] [--loaddatamaps dm.csv] [--loadcolormaps cm.csv] [--datamap polar] [--colormap byorder] [--stride 1000] [--offset 0] [--scale 2]\n\n");
+	printf("--target <explicit target program/file/folder to analyze>\n");
+	printf("--mode <read from, file/folder/memory>\n");
+	printf("--outmode <stdout/file, default is none and results are rendered directly>\n");
+	printf("--output <name of file to write results out to when --outmode is 'file'>\n");
+	printf("--loaddatamaps <csv of data mapping file to load>\n");
+	printf("--loadcolormaps <csv of data mapping file to load>\n");
+	printf("--datamap <name of data mapping to use for rendering>\n");
+	printf("--colormap <name of color mapping to use for rendering>\n");
+	printf("--stride <# of bytes to show in each viewing pane>\n");
+	printf("--offset <offset in bytes to start reading from>\n");
+	printf("--scale <ratio of bytes used per point calculated, zoom>\n");
+	printf("\n");
+	
+}
+
 
 /**
  * cli_verify_state
@@ -123,16 +145,20 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
       /* name of output file, if out mode is 'file' */
       cli_assign_outfile(state, argv[x+1]);
 
-    } else if(strcmp(argv[x], "--loadmaps") == 0 && x < argc-1) {
-      /* location of csv for mappings to load */
+    } else if(strcmp(argv[x], "--loaddatamaps") == 0 && x < argc-1) {
+      /* location of csv for data mappings to load */
       /* TODO SET THIS UP */
 
-    } else if(strcmp(argv[x], "--map") == 0 && x < argc-1) {
-      /* mapping to use by keyword */
+    } else if(strcmp(argv[x], "--loadcolormaps") == 0 && x < argc-1) {
+      /* location of csv for color mappings to load */
+      /* TODO SET THIS UP */
+
+    } else if(strcmp(argv[x], "--datamap") == 0 && x < argc-1) {
+      /* data mapping to use by keyword */
       cli_assign_mapping(state, argv[x+1]);
 
-    } else if(strcmp(argv[x], "--color") == 0 && x < argc-1) {
-      /* coloring to use by keyword */
+    } else if(strcmp(argv[x], "--colormap") == 0 && x < argc-1) {
+      /* color mapping to use by keyword */
       cli_assign_coloring(state, argv[x+1]);
 
     } else if(strcmp(argv[x], "--stride") == 0 && x < argc-1) {
@@ -163,6 +189,12 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
       exit(1);
 
     }
+  }
+  
+  if(argc == 1) {
+  	/* no arguments, print usage info */
+  	cli_print_usage_info();
+  	
   }
 
   /* TODO verify ALL required params are set before continuing */

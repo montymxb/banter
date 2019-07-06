@@ -14,20 +14,32 @@
 
 int main(int argc, char * argv[]) {
 
-  /* TODO Pass cmdline args to the cli.cpp functions,
-  these will return a 'banter_state' object, which will
-  dictate later configurations we will be setting up.
-  For the ids should add converters from char * to an
-  id, and the ability to detect by ID (enum)
-  */
-  struct banter_state *state = cli_getstate_fromargs(argc, argv);
+    /* TODO Pass cmdline args to the cli.cpp functions,
+      these will return a 'banter_state' object, which will
+      dictate later configurations we will be setting up.
+      For the ids should add converters from char * to an
+      id, and the ability to detect by ID (enum)
+    */
+    struct banter_state *state = cli_getstate_fromargs(argc, argv);
+    
+    /* construct banter data object */
+    struct banter_data data;
 
-  /* pass the state to the core, which will control
-  how the reader & mapper are interacted with */
-  struct banter_data *data = core_getdata_withstate(state);
+    /* prepare our data object for reading */
+    core_getdata_obj_withstate(state, &data);
+    
+    /* read one frame (for testing) */
+    reader_get_data_frame(state, &data);
 
-  /* results are then passed to the outputter */
-  outputter_writedata_withstate(data, state);
+    /* results are then passed to the outputter */
+    //outputter_writedata_withstate(&data, state);
+    
+    /* output for viewing, just to make sure it's all okay */
+    // printf
+    
+    /* clear state */
+    free(state);
+    state = NULL;
 
-  return 0;
+    return 0;
 }

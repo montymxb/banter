@@ -4,6 +4,9 @@
  * Holds the structure for defining output data
  */
 
+#ifndef __DATA__H_
+#define __DATA__H_
+
 /* holds data ready for output */
 struct banter_data {
   /* indicates the # of datapoints present */
@@ -22,3 +25,5 @@ struct banter_data {
   /* original data that mappings & colors were derived from */
   char *og_data;
 };
+
+#endif __DATA__H_

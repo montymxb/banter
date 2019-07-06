@@ -6,8 +6,19 @@
 
 #include "core.h"
 
-/* Returns a data object for the current state */
-struct banter_data *core_getdata_withstate(struct banter_state *state) {
-	/* TODO return a legitimate pointer instead of NULL */
-	return NULL;
+/* Modifies a data object for the current state */
+void core_getdata_obj_withstate(struct banter_state *state, struct banter_data *data) {
+    
+    /* set the count of elements (equal to stride) */
+    data->count = state->stride;
+    
+    /* clear pointers */
+    data->xLocations = NULL;
+    data->yLocations = NULL;
+    data->zLocations = NULL;
+    data->rColors    = NULL;
+    data->gColors    = NULL;
+    data->bColors    = NULL;
+    data->og_data    = NULL;
+    
 }

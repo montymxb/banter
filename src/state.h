@@ -25,6 +25,9 @@ struct banter_state {
   int in_mode;
   /* holds target file, process id or dir */
   char *in_target;
+  
+  /* holds output target, such as for writing results to a specific file */
+  char *out_target;
 
   /* id to a registered physical mapping */
   int mapping_id;

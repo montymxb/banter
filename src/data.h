@@ -10,7 +10,7 @@
 /* holds data ready for output */
 struct banter_data {
   /* indicates the # of datapoints present */
-  int count;
+  long count;
 
   /* Physial mapping in 3d space */
   double *xLocations;
@@ -25,5 +25,8 @@ struct banter_data {
   /* original data that mappings & colors were derived from */
   char *og_data;
 };
+
+/* Used to clear existing data */
+void data_clear_data(struct banter_data *data);
 
 #endif __DATA__H_

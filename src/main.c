@@ -28,6 +28,14 @@ int main(int argc, char * argv[]) {
     /* prepare our data object for reading */
     core_getdata_obj_withstate(state, &data);
     
+    // TODO setup rendering here
+    
+    // TODO steps of render loop
+    // 1. read a frame (or skip if no change in reading position)
+    //	- exception being if we should be updating for every frame (i.e realtime analysis)
+    // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
+    // 3. present data object to RENDERER, which will use the underlying mechanism to prepare the data
+    
     /* read one frame (for testing) */
     reader_get_data_frame(state, &data);
 
@@ -35,11 +43,14 @@ int main(int argc, char * argv[]) {
     //outputter_writedata_withstate(&data, state);
     
     /* output for viewing, just to make sure it's all okay */
-    // printf
+    printf("\n(%d)>>>%s\n",data.count, data.og_data);
     
-    /* clear state */
+    /* clear state (no underlying data to clean up yet) */
     free(state);
     state = NULL;
+    
+    /* clear data */
+    data_clear_data(&data);
 
     return 0;
 }

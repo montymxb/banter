@@ -26,6 +26,9 @@ struct banter_state {
   /* holds target file, process id or dir */
   char *in_target;
   
+  /* Holds file resource, as needed */
+  FILE *resource;
+  
   /* holds output target, such as for writing results to a specific file */
   char *out_target;
 
@@ -57,5 +60,7 @@ struct banter_state {
   int output_mapping_id;
 
 };
+
+void state_clear_state(struct banter_state *state);
 
 #endif

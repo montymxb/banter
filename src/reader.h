@@ -7,6 +7,10 @@
 #ifndef __READER__H_
 #define __READER__H_
 
+#include "libs.h"
+#include "state.h"
+#include "data.h"
+
 /* Reads one frame of data */
 void reader_get_data_frame(struct banter_state *state, struct banter_data *data);
 

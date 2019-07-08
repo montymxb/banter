@@ -73,23 +73,42 @@ void cli_assign_outfile(struct banter_state *state, char *arg) {
 
 /* Assigns the CLI stride */
 void cli_assign_stride(struct banter_state *state, char *arg) {
-	/* TODO implement */
+	state->stride = atoi(arg);
+	if(state->stride < 0) {
+		printf("\n[error] Cannot set a stride less than 0!\n");
+		exit(1);
+		
+	}
+	
 }
+
 
 void cli_assign_coloring(struct banter_state *state, char *arg) {
 	/* TODO implement */
 }
 
+
 void cli_assign_mapping(struct banter_state *state, char *arg) {
 	/* TODO implement */
 }
 
+
 void cli_assign_offset(struct banter_state *state, char *arg) {
-	/* TODO implement */
+	state->offset = atoi(arg);
+	if(state->offset < 0) {
+		printf("\n[error] Cannot set an offset less than 0!\n");
+		exit(1);
+		
+	}
 }
 
 void cli_assign_scale(struct banter_state *state, char *arg) {
-	/* TODO implement */
+	state->scale = atoi(arg);
+	if(state->scale < 0) {
+		printf("\n[error] Cannot set a scale less than 0!\n");
+		exit(1);
+		
+	}
 }
 
 
@@ -105,6 +124,8 @@ struct banter_state *cli_get_fresh_state() {
   state->in_mode = 0;
   // no valid default input target to render from
   state->in_target = NULL;
+  /* set default resource of NULL (no file) */
+  state->resource = NULL;
   // no valid output target to write to by default
   state->out_target= NULL;
   // no default mapping id

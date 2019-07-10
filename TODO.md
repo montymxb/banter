@@ -87,3 +87,7 @@ The cli program will handle requests for render ready data for a given file, pro
   - This takes render ready data and presents it visually
   - Utilizes the system available graphics api to render
   - Displays prepared data on the screen in a 3 dimensional visual, corresponds to the underlying structure of the source
+  
+### other things...
+  - alt x,y render along z progression render
+  - inspired by GL globe (google thing), but for a process instead

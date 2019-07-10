@@ -33,10 +33,10 @@ struct banter_state {
   char *out_target;
 
   /* id to a registered physical mapping */
-  int mapping_id;
+  char *mapping_id;
 
   /* id to a registered color mapping */
-  int color_id;
+  char *color_id;
 
   /* reading frame in bytes */
   long stride;

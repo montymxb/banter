@@ -8,9 +8,6 @@
 
 #include "libs.h"
 #include "cli.h"
-#include "data.h"
-#include "core.h"
-#include "outputter.h"
 
 int main(int argc, char * argv[]) {
 
@@ -28,30 +25,8 @@ int main(int argc, char * argv[]) {
     /* prepare our data object for reading */
     core_getdata_obj_withstate(state, &data);
     
-    // TODO next steps
-    // 0. Initiate a loop where we can iteract via the cli
-    //	- read forward by amount
-    //	- read back by amount
-    //	- change stride
-    //	- change scale
-    //	- change mode (invalidates current target if done...)
-    //	- change target (must match current mode)
-    //	- change mapping
-    //	- change coloring
-    //	- 
-    // 1. read a frame (or skip if no change in reading position)
-    //	- exception being if we should be updating for every frame (i.e realtime analysis)
-    // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
-    // 3. send that data to the OUTPUTTER
-    // 4. outputter will present that data out to a given medium, such as the RENDERER, which will use the underlying graphics API to prepare the data
-    
-    /* read one frame (for testing) */
-    reader_get_data_frame(state, &data);
-    /* results are then passed to the outputter */
-    //outputter_writedata_withstate(&data, state);
-    /* output for viewing, just to make sure it's all okay */
-    printf("\n(%d)>>>%s\n",data.count, data.og_data);
-    
+    /* start CLI loop */
+    cli_ui_loop(state, &data);
     
     /* clear and free state */
     state_clear_state(state);

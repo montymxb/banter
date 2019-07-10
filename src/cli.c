@@ -84,12 +84,12 @@ void cli_assign_stride(struct banter_state *state, char *arg) {
 
 
 void cli_assign_coloring(struct banter_state *state, char *arg) {
-	/* TODO implement */
+	state->color_id = arg;
 }
 
 
 void cli_assign_mapping(struct banter_state *state, char *arg) {
-	/* TODO implement */
+	state->mapping_id = arg;
 }
 
 
@@ -257,8 +257,103 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
   	
   }
 
-  /* TODO verify ALL required params are set before continuing */
-
   return state;
 
+}
+
+
+/* CLI user interface loop */
+void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
+
+    int result;
+    char input[255];
+    
+    for(;;) {
+        int result = scanf(" %[^\n]", input);
+            
+        /* Check for EOF */
+        if(result == EOF) {
+            break;
+        }
+            
+        /* Eat up any leftovers */
+        //result = scanf("%*c");
+            
+        /* Check for EOF again */
+        //if(result == EOF) {
+        //    break;
+        //}
+        
+        // recognized commands
+        //	- read forward by amount (+100)
+        //	- read back by amount (-98)
+        //	- change stride (*2)
+        //	- change scale (@50)
+        //	- change mode (invalidates current target if done...) (mDESIRED_MODE_NAME)
+        //	- change target (must match current mode) (tNEW_TARGET)
+        //	- change mapping (pNEW_MAPPING)
+        //	- change coloring (cNEW_COLORING)
+        
+        if(input[0] == '+' || input[0] == '-') {
+            /* read forward/backward an amount (offset) */
+            state->offset+=atoi(input);
+            if(state->offset < 0) {
+                /* never go below zero for offset */
+                state->offset = 0;
+            }
+            printf("~ offset is %d\n", state->offset);
+            
+        } else if(input[0] == '*') {
+            /* change stride */
+            cli_assign_stride(state, (&input)+1);
+            printf("~ stride is %d\n", state->stride);
+            
+        } else if(input[0] == '@') {
+            /* change scale */
+            cli_assign_scale(state, (&input)+1);
+            printf("~ scale is %d\n", state->scale);
+            
+        } else if(input[0] == 'm') {
+            /* new mode */
+            cli_assign_inmode(state, (&input)+1);
+            printf("~ input mode is %d\n", state->in_mode);
+            
+        } else if(input[0] == 't') {
+            /* new mode */
+            // TODO COPY MEM FOR THIS!!!
+            state->in_target = (&input)+1;
+            printf("~ target is '%s'\n", state->in_target);
+            
+        } else if(input[0] == 'p') {
+            // TODO COPY MEM FOR THIS!!!
+            cli_assign_mapping(state, (&input)+1);
+            printf("~ mapping is '%s'\n", state->mapping_id);
+            
+        } else if(input[0] == 'c') {
+            // TODO COPY MEM FOR THIS!!!
+            cli_assign_coloring(state, (&input)+1);
+            printf("~ coloring is '%s'\n", state->color_id);
+            
+        } else {
+            /* unrecognized command */
+            printf("[error] Unrecognized command sequence '%s'\n", input);
+        
+        }
+        
+    }
+    // TODO next steps
+    //	- 
+    // 1. read a frame (or skip if no change in reading position)
+    //	- exception being if we should be updating for every frame (i.e realtime analysis)
+    // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
+    // 3. send that data to the OUTPUTTER
+    // 4. outputter will present that data out to a given medium, such as the RENDERER, which will use the underlying graphics API to prepare the data
+    
+    /* read one frame (for testing) */
+    reader_get_data_frame(state, data);
+    /* results are then passed to the outputter */
+    //outputter_writedata_withstate(data, state);
+    
+    /* output for viewing, just to make sure it's all okay */
+    printf("\n(%d)>>>%s\n",data->count, data->og_data);
 }

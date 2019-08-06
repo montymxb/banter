@@ -10,5 +10,4 @@
 #include <stdio.h>
 #include <string.h>
 
-#endif __LIBS_H__
-
+#endif

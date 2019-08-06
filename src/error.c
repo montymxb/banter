@@ -4,6 +4,8 @@
  * Wraps up error reporting functions
  */
 
+#include "error.h"
+
 /**
  * error_report_with_message
  *

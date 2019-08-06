@@ -23,4 +23,4 @@ void _reader_get_from_process(struct banter_state *state, struct banter_data *da
 /* read from folder */
 void _reader_get_from_folder(struct banter_state *state, struct banter_data *data);
 
-#endif __READER_H_
+#endif

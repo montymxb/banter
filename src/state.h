@@ -9,6 +9,29 @@
 #define __state__h_
 
 #include "libs.h"
+#include "data.h"
+
+#define BANTER_TARGET_SIZE      1024
+#define BANTER_OUT_TARGET_SIZE  1024
+#define BANTER_MAPPING_ID_SIZE  1024
+#define BANTER_COLOR_ID_SIZE    1024
+
+#define BANTER_LOCATION_NAME    1024
+#define BANTER_COLOR_NAME       1024
+
+#define BANTER_MAPPING_COUNT    16 /* TODO, temporary */
+
+/* holds position mapping functionality */
+struct banter_location_mapping {
+  char name[BANTER_LOCATION_NAME];
+  void (*mapping_func)(struct banter_data *);
+};
+
+/* holds color mapping functionality */
+struct banter_color_mapping {
+  char name[BANTER_COLOR_NAME];
+  void (*mapping_func)(struct banter_data *);
+};
 
 /*
   holds the current banter state,
@@ -24,19 +47,27 @@ struct banter_state {
   */
   int in_mode;
   /* holds target file, process id or dir */
-  char *in_target;
+  char in_target[BANTER_TARGET_SIZE];
   
   /* Holds file resource, as needed */
   FILE *resource;
   
   /* holds output target, such as for writing results to a specific file */
-  char *out_target;
+  char out_target[BANTER_OUT_TARGET_SIZE];
 
   /* id to a registered physical mapping */
-  char *mapping_id;
+  char mapping_location_id[BANTER_MAPPING_ID_SIZE];
 
   /* id to a registered color mapping */
-  char *color_id;
+  char mapping_color_id[BANTER_COLOR_ID_SIZE];
+
+  /* array of location mappings */
+  struct banter_location_mapping location_mappings[BANTER_MAPPING_COUNT];
+  int location_mappings_count;
+
+  /* array of color mappings */
+  struct banter_color_mapping color_mappings[BANTER_MAPPING_COUNT];
+  int color_mappings_count;
 
   /* reading frame in bytes */
   long stride;

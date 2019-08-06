@@ -14,4 +14,4 @@
 /* Returns a data object for the current state */
 void core_getdata_obj_withstate(struct banter_state *state, struct banter_data *data);
 
-#endif __CORE__H_
+#endif

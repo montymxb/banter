@@ -34,6 +34,23 @@ void cli_assign_inmode(struct banter_state *state, char *mode) {
   }
 }
 
+
+/**
+ * cli_assign_target
+ *
+ * Assigns a new target to the current state
+ */
+void cli_assign_target(struct banter_state *state, char *target) {
+  if(strlen(target) < BANTER_TARGET_SIZE) {
+    strncpy(state->in_target, target, strlen(target));
+
+  } else {
+    error_report_with_message("target exceeds allotted size");
+
+  }
+}
+
+
 /**
  * cli_assign_outmode
  *
@@ -66,8 +83,14 @@ void cli_assign_outmode(struct banter_state *state, char *mode) {
  *
  * Assigns a file to write out to (only used when the output mode is to file)
  */
-void cli_assign_outfile(struct banter_state *state, char *arg) {
-	state->out_target = arg;
+void cli_assign_outfile(struct banter_state *state, char *target) {
+	if(strlen(target) < BANTER_OUT_TARGET_SIZE) {
+    strncpy(state->out_target, target, strlen(target));
+
+  } else {
+    error_report_with_message("out target exceeds allotted size");
+
+  }
 }
 
 
@@ -83,16 +106,31 @@ void cli_assign_stride(struct banter_state *state, char *arg) {
 }
 
 
+/* Assigns the CLI coloring */
 void cli_assign_coloring(struct banter_state *state, char *arg) {
-	state->color_id = arg;
+	if(strlen(arg) < BANTER_COLOR_ID_SIZE) {
+    strncpy(state->mapping_color_id, arg, strlen(arg));
+
+  } else {
+    error_report_with_message("unable to assign color id of too long size");
+
+  }
 }
 
 
+/* Assigns the CLI mapping */
 void cli_assign_mapping(struct banter_state *state, char *arg) {
-	state->mapping_id = arg;
+  if(strlen(arg) < BANTER_MAPPING_ID_SIZE) {
+    strncpy(state->mapping_location_id, arg, strlen(arg));
+
+  } else {
+    error_report_with_message("unable to assign mapping of too long size");
+
+  }
 }
 
 
+/* Assigns the CLI offset */
 void cli_assign_offset(struct banter_state *state, char *arg) {
 	state->offset = atoi(arg);
 	if(state->offset < 0) {
@@ -120,28 +158,38 @@ void cli_assign_scale(struct banter_state *state, char *arg) {
 struct banter_state *cli_get_fresh_state() {
   struct banter_state *state = (struct banter_state *)malloc(sizeof(struct banter_state));
 
-  // default input mode is file
+  /* default input mode is file */
   state->in_mode = 0;
-  // no valid default input target to render from
-  state->in_target = NULL;
+  /* no valid default input target to render from */
+  state->in_target[0] = '\0';
   /* set default resource of NULL (no file) */
   state->resource = NULL;
-  // no valid output target to write to by default
-  state->out_target= NULL;
-  // no default mapping id
-  state->mapping_id = -1;
-  // no default color id
-  state->color_id = -1;
-  // default stride of 1 byte
+  /* no valid output target to write to by default */
+  state->out_target[0] = '\0';
+  /* no default mapping id */
+  state->mapping_location_id[0] = '\0';
+  /* no default color id */
+  state->mapping_color_id[0] = '\0';
+  /* default stride of 1 byte */
   state->stride = 1;
-  // default offset of 0 bytes
+  /* default offset of 0 bytes */
   state->offset = 0;
-  // default scale of 1 point:1 byte
+  /* default scale of 1 point:1 byte */
   state->scale = 1;
-  // default out mode for 'render'
+  /* default out mode for 'render' */
   state->out_mode = 0;
-  // no default mapping id
+  /* no default mapping id */
   state->output_mapping_id = -1;
+
+  /* setup location mapping for defaults */
+  state->location_mappings[0].name[0] = '\0';
+  state->location_mappings[0].mapping_func = &mapper_default_location_mapping;
+  state->location_mappings_count = 1;
+
+  /* setup color mapping for defaults */
+  state->color_mappings[0].name[0] = '\0';
+  state->color_mappings[0].mapping_func = &mapper_default_color_mapping;
+  state->color_mappings_count = 1;
 
   return state;
 
@@ -235,12 +283,12 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
 
     } else if(strcmp(argv[x], "--target") == 0 && x < argc-1) {
       /* explicit target */
-      state->in_target = argv[++x];
+      cli_assign_target(state, argv[++x]);
       hasTarget = 1;
 
     } else if(hasTarget == 0) {
       /* implicit target */
-      state->in_target = argv[x];
+      cli_assign_target(state, argv[x]);
       hasTarget = 1;
 
     } else {
@@ -269,7 +317,30 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
     char input[255];
     
     for(;;) {
-        int result = scanf(" %[^\n]", input);
+
+        /*
+        // TODO next steps
+        //  - 
+        // 1. read a frame (or skip if no change in reading position)
+        //  - exception being if we should be updating for every frame (i.e realtime analysis)
+        // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
+        // 3. send that data to the OUTPUTTER
+        // 4. outputter will present that data out to a given medium, such as the RENDERER, which will use the underlying graphics API to prepare the data
+        */
+
+        /* read one frame (for testing) */
+        reader_get_data_frame(state, data);
+
+        /* map this data */
+        mapper_prepare_data(state, data);
+
+        /* results are then passed to the outputter */
+        /* outputter_writedata_withstate(data, state); */
+
+        /* TODO output for viewing, just to make sure it's all okay */
+        printf("\n(%d)>>>%s\n",data->count, data->og_data);
+
+        result = scanf(" %[^\n]", input);
             
         /* Check for EOF */
         if(result == EOF) {
@@ -277,13 +348,16 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         }
             
         /* Eat up any leftovers */
-        //result = scanf("%*c");
+        /* result = scanf("%*c"); */
             
         /* Check for EOF again */
+        /*
         //if(result == EOF) {
         //    break;
         //}
+        */
         
+        /*
         // recognized commands
         //	- read forward by amount (+100)
         //	- read back by amount (-98)
@@ -293,6 +367,7 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         //	- change target (must match current mode) (tNEW_TARGET)
         //	- change mapping (pNEW_MAPPING)
         //	- change coloring (cNEW_COLORING)
+        */
         
         if(input[0] == '+' || input[0] == '-') {
             /* read forward/backward an amount (offset) */
@@ -320,20 +395,24 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
             
         } else if(input[0] == 't') {
             /* new mode */
-            // TODO COPY MEM FOR THIS!!!
-            state->in_target = (&input)+1;
+            cli_assign_target(state, (&input)+1);
             printf("~ target is '%s'\n", state->in_target);
             
         } else if(input[0] == 'p') {
-            // TODO COPY MEM FOR THIS!!!
+            /* new mapping */
             cli_assign_mapping(state, (&input)+1);
-            printf("~ mapping is '%s'\n", state->mapping_id);
+            printf("~ mapping is '%s'\n", state->mapping_location_id);
             
         } else if(input[0] == 'c') {
-            // TODO COPY MEM FOR THIS!!!
+            /* new coloring */
             cli_assign_coloring(state, (&input)+1);
-            printf("~ coloring is '%s'\n", state->color_id);
+            printf("~ coloring is '%s'\n", state->mapping_color_id);
             
+        } else if(input[0] == 'q') {
+            /* quit, exit the program */
+            printf("~ quitting\n");
+            break;
+
         } else {
             /* unrecognized command */
             printf("[error] Unrecognized command sequence '%s'\n", input);
@@ -341,19 +420,4 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         }
         
     }
-    // TODO next steps
-    //	- 
-    // 1. read a frame (or skip if no change in reading position)
-    //	- exception being if we should be updating for every frame (i.e realtime analysis)
-    // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
-    // 3. send that data to the OUTPUTTER
-    // 4. outputter will present that data out to a given medium, such as the RENDERER, which will use the underlying graphics API to prepare the data
-    
-    /* read one frame (for testing) */
-    reader_get_data_frame(state, data);
-    /* results are then passed to the outputter */
-    //outputter_writedata_withstate(data, state);
-    
-    /* output for viewing, just to make sure it's all okay */
-    printf("\n(%d)>>>%s\n",data->count, data->og_data);
 }

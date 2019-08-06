@@ -7,6 +7,8 @@
 #ifndef __DATA__H_
 #define __DATA__H_
 
+#include <stdlib.h>
+
 /* holds data ready for output */
 struct banter_data {
   /* indicates the # of datapoints present */
@@ -29,4 +31,4 @@ struct banter_data {
 /* Used to clear existing data */
 void data_clear_data(struct banter_data *data);
 
-#endif __DATA__H_
+#endif

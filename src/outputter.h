@@ -13,4 +13,4 @@
 /* Returns a data object for the current state */
 void outputter_writedata_withstate(struct banter_data *data, struct banter_state *state);
 
-#endif __OUTPUTTER__H_
+#endif

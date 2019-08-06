@@ -19,6 +19,26 @@ Banter can be used in conjunction with other tools to quickly assess the structu
 
 Banter can be targeted onto a file, process or folder to provide visual analysis of the underlying structure. For this variant the UI is still pending.
 
+### Getting started
+
+First, build banter from source.
+
+```bash
+make
+```
+
+Upon successfully building, you'll find banter in build/. To run it, you can simply type:
+
+```bash
+./banter
+```
+
+To get started, here's an example of reading from a file (this file in the example).
+
+```bash
+./banter README.md
+```
+
 ## When to use banter.
 
 Whenever a general understanding of structure is needed. This is useful for identifying what kind of data you are looking at if format has not been determined in advance. Various aspects in data such as entropy, structure, compression, and uniformity can be seen and used to determine file formats and architectures that a program was built for.

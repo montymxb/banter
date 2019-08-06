@@ -10,7 +10,8 @@
 void core_getdata_obj_withstate(struct banter_state *state, struct banter_data *data) {
     
     /* set the count of elements (equal to stride) */
-    data->count = state->stride;
+    data->count         = state->stride;
+    data->last_count    = 0;
     
     /* clear pointers */
     data->xLocations = NULL;

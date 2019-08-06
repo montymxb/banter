@@ -35,14 +35,40 @@ void mapper_prepare_data(struct banter_state *state, struct banter_data *data) {
 	int x;
 	char matched = 0;
 
-	/* TODO setup location & color data memory here */
+	/* if last count is less than current count (and not zero), reallocate */
+	if(data->last_count > 0 && data->last_count < data->count) {
+		/* free all */
+		free(data->xLocations);
+		free(data->yLocations);
+		free(data->zLocations);
+		free(data->rColors);
+		free(data->gColors);
+		free(data->bColors);
+
+		/* so next if catches to allocate */
+		data->xLocations = NULL;
+
+	}
+
+	/* if pointers are null, setup for the first time, adjust last count */
+	if(data->xLocations == NULL) {
+		data->xLocations = (double *)malloc(sizeof(double) * data->count);
+		data->yLocations = (double *)malloc(sizeof(double) * data->count);
+		data->zLocations = (double *)malloc(sizeof(double) * data->count);
+
+		data->rColors = (double *)malloc(sizeof(double) * data->count);
+		data->gColors = (double *)malloc(sizeof(double) * data->count);
+		data->bColors = (double *)malloc(sizeof(double) * data->count);
+
+		data->last_count = data->count;
+
+	}
 
 	/* map locations */
 	for(x = 0; x < state->location_mappings_count; x++) {
 		if(strcmp(state->location_mappings[x].name, state->mapping_location_id) == 0) {
 			(*(state->location_mappings[x].mapping_func))(data);
 			matched = matched | 1;
-			printf(">>>%d\n", matched);
 		}
 	}
 
@@ -51,7 +77,6 @@ void mapper_prepare_data(struct banter_state *state, struct banter_data *data) {
 		if(strcmp(state->color_mappings[x].name, state->mapping_color_id) == 0) {
 			(*(state->color_mappings[x].mapping_func))(data);
 			matched = matched | 2;
-			printf(">>>%d\n", matched);
 		}
 	}
 

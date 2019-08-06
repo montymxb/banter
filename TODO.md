@@ -1,11 +1,9 @@
 # TODOs
 
-- mapper (continue from here)
-  - upon mapping, check to see if
-    - pointers are NULL, then allocate
-    - pointers are not NULL, but prior size is greater than (store it somewhere), so reuse
-    - pointers are not NULL, but prior size is less than (free & reallocate)
 - outputter
+  - implement 'outputter_writedata_withstate'
+    - change the name to better reflect that it just makes data available, including to the
+    renderer, or some stream, don't matter...
   - accepts mapped data, and sends it via the selected output method
   - may the renderer, or may be another medium, but doesn't matter, is purely a relay component
 - cli

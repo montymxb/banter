@@ -14,6 +14,9 @@ struct banter_data {
   /* indicates the # of datapoints present */
   long count;
 
+  /* tracks last # of datapoints, used for allocations in the mapper */
+  long last_count;
+
   /* Physial mapping in 3d space */
   double *xLocations;
   double *yLocations;

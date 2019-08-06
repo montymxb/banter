@@ -335,7 +335,7 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         mapper_prepare_data(state, data);
 
         /* results are then passed to the outputter */
-        /* outputter_writedata_withstate(data, state); */
+        outputter_writedata_withstate(data, state);
 
         /* TODO output for viewing, just to make sure it's all okay */
         printf("\n(%d)>>>%s\n",data->count, data->og_data);

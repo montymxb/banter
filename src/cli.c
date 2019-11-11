@@ -57,17 +57,27 @@ void cli_assign_target(struct banter_state *state, char *target) {
  * Sets up the output mode for the cli, the default mode is to render directly
  */
 void cli_assign_outmode(struct banter_state *state, char *mode) {
-	if(strcmp(mode, "file") == 0) {
-    /* file */
+	if(strcmp(mode, "stdout") == 0) {
+    /* stdout */
     state->out_mode = 1;
 
-  } else if(strcmp(mode, "pipe") == 0) {
-    /* process */
+  } else if(strcmp(mode, "stream") == 0) {
+    /* stream */
     state->out_mode = 2;
 
   } else if(strcmp(mode, "render") == 0) {
     /* process */
     state->out_mode = 0;
+
+    /* setup the current renderer */
+    #ifdef _WIN32
+    /* setup for Windows */
+
+    #else
+    /* setup for Unix */
+    state->renderer.start     = opengl_driver_start;
+    state->renderer.teardown  = opengl_driver_teardown;
+    #endif
 
   } else {
     /* unrecognized state, return an error */
@@ -100,9 +110,9 @@ void cli_assign_stride(struct banter_state *state, char *arg) {
 	if(state->stride < 0) {
 		printf("\n[error] Cannot set a stride less than 0!\n");
 		exit(1);
-		
+
 	}
-	
+
 }
 
 
@@ -135,17 +145,18 @@ void cli_assign_offset(struct banter_state *state, char *arg) {
 	state->offset = atoi(arg);
 	if(state->offset < 0) {
 		printf("\n[error] Cannot set an offset less than 0!\n");
-		exit(1);
-		
+		state->offset = 0;
+
 	}
 }
+
 
 void cli_assign_scale(struct banter_state *state, char *arg) {
 	state->scale = atoi(arg);
 	if(state->scale < 0) {
 		printf("\n[error] Cannot set a scale less than 0!\n");
 		exit(1);
-		
+
 	}
 }
 
@@ -166,30 +177,39 @@ struct banter_state *cli_get_fresh_state() {
   state->resource = NULL;
   /* no valid output target to write to by default */
   state->out_target[0] = '\0';
-  /* no default mapping id */
-  state->mapping_location_id[0] = '\0';
-  /* no default color id */
-  state->mapping_color_id[0] = '\0';
+  /* default mapping id */
+  strcpy(state->mapping_location_id, LOC_MAP_CUBE);
+  /* default color id */
+  strcpy(state->mapping_color_id, COL_MAP_3D_VALUE);
   /* default stride of 1 byte */
   state->stride = 1;
   /* default offset of 0 bytes */
   state->offset = 0;
   /* default scale of 1 point:1 byte */
   state->scale = 1;
-  /* default out mode for 'render' */
-  state->out_mode = 0;
-  /* no default mapping id */
-  state->output_mapping_id = -1;
+  /* set defaults for renderer, which will be set if used */
+  state->renderer.is_ready = 0;
+  cli_assign_outmode(state, "render");
 
   /* setup location mapping for defaults */
-  state->location_mappings[0].name[0] = '\0';
-  state->location_mappings[0].mapping_func = &mapper_default_location_mapping;
-  state->location_mappings_count = 1;
+  state->location_mappings_count = MAPPINGS_COUNT;
+  int index = 0;
+  state_add_location_mapping(index++, LOC_MAP_EXTRUDE_Z, &mapper_extrude_z_location_mapping, state);
+  state_add_location_mapping(index++, LOC_MAP_SPHERICAL_2D, &mapper_spherical_2d_location_mapping, state);
+  state_add_location_mapping(index++, LOC_MAP_SPHERICAL_3D, &mapper_spherical_3d_location_mapping, state);
+  state_add_location_mapping(index++, LOC_MAP_CUBE, &mapper_cube_location_mapping, state);
+
 
   /* setup color mapping for defaults */
-  state->color_mappings[0].name[0] = '\0';
-  state->color_mappings[0].mapping_func = &mapper_default_color_mapping;
-  state->color_mappings_count = 1;
+  state->color_mappings_count = COLORINGS_COUNT;
+  index = 0;
+  state_add_color_mapping(index++, COL_MAP_VALUE, &mapper_value_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_3D_VALUE, &mapper_3d_value_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_POSITIONAL, &mapper_positional_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_ENTROPY, &mapper_entropy_color_mapping, state);
+
+  /* generate fresh data */
+  state->data = (struct banter_data*)malloc(sizeof(struct banter_data));
 
   return state;
 
@@ -214,7 +234,7 @@ void cli_print_usage_info() {
 	printf("--offset <offset in bytes to start reading from>\n");
 	printf("--scale <ratio of bytes used per point calculated, zoom>\n");
 	printf("\n");
-	
+
 }
 
 
@@ -246,7 +266,7 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
       cli_assign_inmode(state, argv[++x]);
 
     } else if(strcmp(argv[x], "--outmode") == 0 && x < argc-1) {
-      /* output mode, such as stdout/file */
+      /* output mode, such as renderer/stdout/stream */
       cli_assign_outmode(state, argv[++x]);
 
     } else if(strcmp(argv[x], "--output") == 0 && x < argc-1) {
@@ -298,11 +318,11 @@ struct banter_state *cli_getstate_fromargs(int argc, char *argv[]) {
 
     }
   }
-  
+
   if(argc == 1) {
   	/* no arguments, print usage info */
   	cli_print_usage_info();
-  	
+
   }
 
   return state;
@@ -315,12 +335,12 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
 
     int result;
     char input[255];
-    
+
     for(;;) {
 
         /*
         // TODO next steps
-        //  - 
+        //  -
         // 1. read a frame (or skip if no change in reading position)
         //  - exception being if we should be updating for every frame (i.e realtime analysis)
         // 2. prepare that frame into x & y coordinate axes and colors via MAPPER
@@ -335,28 +355,28 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         mapper_prepare_data(state, data);
 
         /* results are then passed to the outputter */
-        outputter_writedata_withstate(data, state);
+        outputter_forwarddata_withstate(state);
 
         /* TODO output for viewing, just to make sure it's all okay */
         printf("\n(%d)>>>%s\n",data->count, data->og_data);
 
         result = scanf(" %[^\n]", input);
-            
+
         /* Check for EOF */
         if(result == EOF) {
             break;
         }
-            
+
         /* Eat up any leftovers */
         /* result = scanf("%*c"); */
-            
+
         /* Check for EOF again */
         /*
         //if(result == EOF) {
         //    break;
         //}
         */
-        
+
         /*
         // recognized commands
         //	- read forward by amount (+100)
@@ -368,7 +388,7 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         //	- change mapping (pNEW_MAPPING)
         //	- change coloring (cNEW_COLORING)
         */
-        
+
         if(input[0] == '+' || input[0] == '-') {
             /* read forward/backward an amount (offset) */
             state->offset+=atoi(input);
@@ -377,37 +397,37 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
                 state->offset = 0;
             }
             printf("~ offset is %d\n", state->offset);
-            
+
         } else if(input[0] == '*') {
             /* change stride */
             cli_assign_stride(state, (&input)+1);
             printf("~ stride is %d\n", state->stride);
-            
+
         } else if(input[0] == '@') {
             /* change scale */
             cli_assign_scale(state, (&input)+1);
             printf("~ scale is %d\n", state->scale);
-            
+
         } else if(input[0] == 'm') {
             /* new mode */
             cli_assign_inmode(state, (&input)+1);
             printf("~ input mode is %d\n", state->in_mode);
-            
+
         } else if(input[0] == 't') {
-            /* new mode */
+            /* new target */
             cli_assign_target(state, (&input)+1);
             printf("~ target is '%s'\n", state->in_target);
-            
+
         } else if(input[0] == 'p') {
             /* new mapping */
             cli_assign_mapping(state, (&input)+1);
             printf("~ mapping is '%s'\n", state->mapping_location_id);
-            
+
         } else if(input[0] == 'c') {
             /* new coloring */
             cli_assign_coloring(state, (&input)+1);
             printf("~ coloring is '%s'\n", state->mapping_color_id);
-            
+
         } else if(input[0] == 'q') {
             /* quit, exit the program */
             printf("~ quitting\n");
@@ -416,8 +436,8 @@ void cli_ui_loop(struct banter_state *state, struct banter_data *data) {
         } else {
             /* unrecognized command */
             printf("[error] Unrecognized command sequence '%s'\n", input);
-        
+
         }
-        
+
     }
 }

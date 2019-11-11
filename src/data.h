@@ -17,6 +17,9 @@ struct banter_data {
   /* tracks last # of datapoints, used for allocations in the mapper */
   long last_count;
 
+  /* reading scale from state */
+  long scale;
+
   /* Physial mapping in 3d space */
   double *xLocations;
   double *yLocations;
@@ -29,6 +32,9 @@ struct banter_data {
 
   /* original data that mappings & colors were derived from */
   char *og_data;
+
+  /* total resource size in bytes */
+  long resourceSize;
 };
 
 /* Used to clear existing data */

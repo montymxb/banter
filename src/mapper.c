@@ -6,25 +6,246 @@
 
 #include "mapper.h"
 
-/* default location mapper */
-void mapper_default_location_mapping(struct banter_data *data) {
+/* map with an extrude along the z axis */
+void mapper_extrude_z_location_mapping(struct banter_data *data) {
 	long x;
-	for(x = 0; x < data->count; x++) {
+	double yProg = 0.0;
+
+	for(x = 0; x < data->count; x+=data->scale) {
 		data->xLocations[x] = data->og_data[x];
-		data->yLocations[x] = data->og_data[x];
-		data->zLocations[x] = x;
+		data->yLocations[x] = yProg-=0.1;
+		if(x > 0) {
+			/* use prior 'z' to set this up */
+			data->zLocations[x] = data->og_data[x-1];
+		} else {
+			/* 1st entry, just 0 'z' */
+			data->zLocations[x] = 0;
+		}
 	}
 }
 
-/* default color mapper */
-void mapper_default_color_mapping(struct banter_data *data) {
+
+/* Maps to 2D spherical coordinates */
+void mapper_spherical_2d_location_mapping(struct banter_data *data) {
 	long x;
-	for(x = 0; x < data->count; x++) {
-		data->rColors[x] = data->og_data[x] % 64;
-		data->gColors[x] = data->og_data[x] % 128;
-		data->bColors[x] = data->og_data[x];
+	double diameter = 0.0;
+	for(x = 0; x < data->count; x+=data->scale) {
+		float dataVal = (data->og_data[x] + 128.0) / 256.0;
+
+		/* calculate x along shell */
+		data->xLocations[x] = diameter * cos(dataVal * 2.0 * PI);
+
+		/* calculate y along shell */
+		data->yLocations[x] = diameter * sin(dataVal * 2.0 * PI);
+
+		/* calculate z along shell */
+		/* actually calculate this properly... */
+		data->zLocations[x] = 0.0;
+
+		diameter+=0.1;
+
 	}
 }
+
+/* Maps to 3D spherical coordinates */
+void mapper_spherical_3d_location_mapping(struct banter_data *data) {
+	long x;
+	double radius = 0.0;
+	double twoPi = 2.0 * PI;
+	for(x = 0; x < data->count; x+=data->scale) {
+
+		/* calculate z along shell */
+		if(x > 1) {
+
+			/* place a point on the shell of sphere of radius 'radius' */
+			double dataVal1 = data->og_data[x] / 128.0;
+			double dataVal2 = data->og_data[x-1] / 128.0;
+			data->xLocations[x] = radius * cos(dataVal1 * twoPi);
+			data->yLocations[x] = radius * sin(dataVal2 * twoPi);
+
+			double cosVal = cos(data->og_data[x-2] / 128.0 * twoPi);
+			double sinVal = sin(data->og_data[x-2] / 128.0 * twoPi);
+
+			/* use cos for calculating z location */
+			data->zLocations[x] = radius * cosVal;
+
+			/* use sin (inverse) to calculate how to adjust x & y for sphere */
+			data->yLocations[x] = fabs(sinVal) * data->yLocations[x];
+			data->xLocations[x] = fabs(sinVal) * data->xLocations[x];
+
+		} else if(x > 0) {
+			/* just x & y */
+			double dataVal1 = data->og_data[x] / 128.0;
+			double dataVal2 = data->og_data[x-1] / 128.0;
+			data->xLocations[x] = radius * cos(dataVal1 * twoPi);
+			data->yLocations[x] = radius * sin(dataVal2 * twoPi);
+			data->zLocations[x] = 0.0;
+
+		} else {
+			/* 1st point */
+			data->xLocations[x] = 0.0;
+			data->yLocations[x] = 0.0;
+			data->zLocations[x] = 0.0;
+		}
+
+		radius+=0.1;
+
+	}
+}
+
+
+/* cube mapping */
+void mapper_cube_location_mapping(struct banter_data *data) {
+	for(int x = 0; x < data->count; x++) {
+		if(x > 1) {
+			/* rest of runs */
+			data->xLocations[x] = data->og_data[x];
+			data->yLocations[x] = data->og_data[x-1];
+			data->zLocations[x] = data->og_data[x-2];
+
+		} else if(x > 0) {
+			/* second */
+			data->xLocations[x] = data->og_data[x];
+			data->yLocations[x] = data->og_data[x-1];
+			data->zLocations[x] = 0.0;
+
+		} else {
+			/* initial */
+			data->xLocations[x] = data->og_data[x];
+			data->yLocations[x] = 0.0;
+			data->zLocations[x] = 0.0;
+
+		}
+	}
+}
+
+
+/* Color by value of a given byte */
+void mapper_value_color_mapping(struct banter_data *data) {
+	long x;
+	for(x = 0; x < data->count; x+=data->scale) {
+		/* color from val */
+		float val = data->og_data[x];
+		float colorVal = (val + 128.0) / 256.0;
+
+		if(colorVal < 0.0 || colorVal > 1.0) {
+			printf("Bad color Value '%d'!\n", colorVal);
+			exit(1);
+
+		}
+
+		// 85.3 range
+		if(val <= -84) {
+			/* lowest, red hues */
+			data->rColors[x] = 1.0;
+			data->gColors[x] = colorVal;
+			data->bColors[x] = 1.0 - colorVal;
+
+		} else if(val <= -42) {
+			/* low triad, red hues */
+			data->rColors[x] = 1.0;
+			data->gColors[x] = 1.0 - colorVal;
+			data->bColors[x] = colorVal;
+
+		} else if(val <= 0) {
+			/* mid symbols, green hues */
+			data->rColors[x] = colorVal;
+			data->gColors[x] = 1.0;
+			data->bColors[x] = 1.0 - colorVal;
+
+		} else if(val <= 44) {
+			/* mid symbols, green hues */
+			data->rColors[x] = 1.0 - colorVal;
+			data->gColors[x] = 1.0;
+			data->bColors[x] = colorVal;
+
+		} else if(val <= 88) {
+			/* upper symbols, english, mostly... */
+			data->rColors[x] = 1.0 - colorVal;
+			data->gColors[x] = colorVal;
+			data->bColors[x] = 1.0;
+
+		} else {
+			/* upper symbols, english, mostly... */
+			data->rColors[x] = colorVal;
+			data->gColors[x] = 1.0 - colorVal;
+			data->bColors[x] = 1.0;
+
+		}
+
+	}
+}
+
+
+/* Colors based on position */
+void mapper_positional_color_mapping(struct banter_data *data) {
+	long x;
+	for(x = 0; x < data->count; x+=data->scale) {
+		data->rColors[x] = (x*1.0) / data->count;
+		data->gColors[x] = 1.0 - (x*1.0) / data->count;
+		data->bColors[x] = 0.0;
+	}
+}
+
+
+/* Colors based on variance in values */
+void mapper_entropy_color_mapping(struct banter_data *data) {
+	long x;
+	double variance = 0.0;
+	for(x = 0; x < data->count; x+=data->scale) {
+		if(x > 0) {
+			float colorVal1 = (data->og_data[x] + 128.0) / 256.0;
+			float diff = fabs(variance - colorVal1);
+
+			/* recalc variance */
+			variance = (variance + colorVal1) / 2.0;
+
+			/* more red, more variance */
+			data->rColors[x] = diff * 2.0;
+			/* more green, less variance */
+			data->gColors[x] = 1.0 - diff * 2.0;
+			data->bColors[x] = 0.0;
+
+		} else {
+			/* set baseline variance */
+			variance = (data->og_data[x] + 128.0) / 256.0;
+			data->rColors[x] = 0.0;
+			data->gColors[x] = 1.0;
+			data->bColors[x] = 0.0;
+		}
+	}
+}
+
+
+/* 3d color mapper */
+void mapper_3d_value_color_mapping(struct banter_data *data) {
+	for(int x = 0; x < data->count; x++) {
+		if(x > 1) {
+			/* rest of runs */
+			data->rColors[x] = (data->og_data[x] + 128.0) / 320.0 + 0.2;
+			data->gColors[x] = (data->og_data[x-1] + 128.0) / 320.0 + 0.2;
+			data->bColors[x] = (data->og_data[x-2] + 128.0) / 320.0 + 0.2;
+
+		} else {
+			data->rColors[x] = 0.0;
+			data->gColors[x] = 0.0;
+			data->bColors[x] = 0.0;
+
+		}/* else if(x > 0) {
+			data->rColors[x] = (data->og_data[x] + 128.0) / 256.0;
+			data->gColors[x] = (data->og_data[x-1] + 128.0) / 256.0;
+			data->bColors[x] = 0.0;
+
+		} else {
+			data->rColors[x] = (data->og_data[x] + 128.0) / 256.0;
+			data->gColors[x] = 0.0;
+			data->bColors[x] = 0.0;
+
+		}
+		*/
+	}
+}
+
 
 /**
  * mapper_prepare_data
@@ -64,9 +285,13 @@ void mapper_prepare_data(struct banter_state *state, struct banter_data *data) {
 
 	}
 
+	/* set scale, so we show the appropriate offset */
+	data->scale = state->scale;
+
 	/* map locations */
 	for(x = 0; x < state->location_mappings_count; x++) {
 		if(strcmp(state->location_mappings[x].name, state->mapping_location_id) == 0) {
+			/* apply this location mapping function */
 			(*(state->location_mappings[x].mapping_func))(data);
 			matched = matched | 1;
 		}
@@ -75,6 +300,7 @@ void mapper_prepare_data(struct banter_state *state, struct banter_data *data) {
 	/* map colors */
 	for(x = 0; x < state->color_mappings_count; x++) {
 		if(strcmp(state->color_mappings[x].name, state->mapping_color_id) == 0) {
+			/* apply this color mapping function */
 			(*(state->color_mappings[x].mapping_func))(data);
 			matched = matched | 2;
 		}

@@ -1,24 +1,29 @@
 # TODOs
-
+- fix color bias (in strips, but should be in grids)
+- scale bugs
+  - fix issue with shifting scale in gui causes redraw of pixels at similar z offsets
+  - memory needs to be resized, and sizes need to be standardized for scale of > 1
+- implement the following renderings
+    - NOTE, near ZERO 'y' progression shows a flat unit that looks a LOT like something from cantor dust (distributions...)
+    - cylindrical progression
+    - spherical representation
+        - shell representation (sphere in sphere in sphere perhaps for different models???)
+        - may happen naturally however...
+    - protein chain building
+    - z-chain building
+    - standard rendering, but with byte counts incremented for every 'hit' on a 256x256 grid (frequency counter)
+    - hilbert curve
+        - 2D
+        - 3D
+- show menu keys for selecting all available colorings
+    - same deal...
+- move visual 50/50 into the MIDDLE of the screen, starts and ends at the ends, rather than the middle (easier to focus then)
+- menu key for file to read from
+- BUG, dynamically reassigned targets do not get set??? (we can double check this...)
 - outputter
-  - implement 'outputter_writedata_withstate'
-    - change the name to better reflect that it just makes data available, including to the
-    renderer, or some stream, don't matter...
-  - accepts mapped data, and sends it via the selected output method
-  - may the renderer, or may be another medium, but doesn't matter, is purely a relay component
+  - implement STDOUT connection (just to stdout, will need to set this up if needed)
+  - implement STREAM connection (to resource)
 - cli
   - setup loaddatamaps in cli_getstate_fromargs
   - setup colormap in cli_getstate_fromargs
   - add proper error handling for a missing state in cli_verify_state
-- renderer
-  - takes mapped data, and renders it to the screen (default option)
-  - set up an abstraction to a GenericRenderer interface
-    - Generic Renderer (all renderers use these 3 steps)
-      - setup phase (prepares the renderer for use)
-      - render frame (takes mapped data, renders it)
-      - teardown phase (cleans up everything)
-    - OpenGL renderer
-      - build off generic for OpenGL bindings in C
-      - maybe variant for mac/linux/etc.
-    - Vulkan renderer
-      - once OpenGL works, add support for this

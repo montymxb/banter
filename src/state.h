@@ -19,7 +19,9 @@
 #define BANTER_LOCATION_NAME    1024
 #define BANTER_COLOR_NAME       1024
 
-#define BANTER_MAPPING_COUNT    16 /* TODO, temporary */
+/* # of predefined mappings that we will hold (color & physical) */
+#define BANTER_MAPPING_COUNT    16
+
 
 /* holds position mapping functionality */
 struct banter_location_mapping {
@@ -27,10 +29,19 @@ struct banter_location_mapping {
   void (*mapping_func)(struct banter_data *);
 };
 
+
 /* holds color mapping functionality */
 struct banter_color_mapping {
   char name[BANTER_COLOR_NAME];
   void (*mapping_func)(struct banter_data *);
+};
+
+
+/* holds function pointers for a generic renderer to be used with */
+struct generic_renderer {
+    char is_ready;
+    void (*start)(struct banter_state *state);
+    void (*teardown)();
 };
 
 /*
@@ -39,6 +50,12 @@ struct banter_color_mapping {
   banter should be operating given what it's provided
  */
 struct banter_state {
+  /* argc */
+  int argc;
+
+  /* argv */
+  char **argv;
+
   /*
   Mode for reading input
   0 = file
@@ -48,10 +65,10 @@ struct banter_state {
   int in_mode;
   /* holds target file, process id or dir */
   char in_target[BANTER_TARGET_SIZE];
-  
+
   /* Holds file resource, as needed */
   FILE *resource;
-  
+
   /* holds output target, such as for writing results to a specific file */
   char out_target[BANTER_OUT_TARGET_SIZE];
 
@@ -82,16 +99,23 @@ struct banter_state {
 
   /*
   Mode for sending output
-  0 = stdout
-  1 = file
+  0 = renderer
+  1 = stdout (TODO may setup as needed)
+  2 = stream (TODO may setup as needed)
   */
   int out_mode;
 
-  /* id to a registered output mapping */
-  int output_mapping_id;
+  /* renderer state */
+  struct generic_renderer renderer;
+
+  /* holds data for parsing */
+  struct banter_data *data;
 
 };
 
 void state_clear_state(struct banter_state *state);
+
+void state_add_location_mapping(int index, char *name, void (*mapping_func)(struct banter_data *), struct banter_state *state);
+void state_add_color_mapping(int index, char *name, void (*mapping_func)(struct banter_data *), struct banter_state *state);
 
 #endif

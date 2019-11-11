@@ -15,6 +15,14 @@
 #include "error.h"
 #include "mapper.h"
 #include "reader.h"
+
+#ifdef _WIN32
+/* TODO Windows Graphics API */
+#else
+/* Unix Graphics API, OpenGL */
+#include "opengl_driver.h"
+#endif
+
 #include <stdio.h>
 
 /* Returns a banter state struct from given args */

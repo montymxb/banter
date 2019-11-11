@@ -7,6 +7,20 @@
 # -03 removed, introduced goofy instruction?
 CFLAGS+=-Isrc -std=c90 -ansi -fno-common -fshort-enums -pedantic -W -Wall -fno-common -fshort-enums -Wcast-align -Wcast-qual -Wconversion -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wpointer-arith -Wshadow
 
+# detect unix variant
+UNAME_S := $(shell uname -s)
+
+# linux check
+ifeq ($(UNAME_S), Linux)
+	# setup for linux
+endif
+
+# darwin (osx) check
+# TODO should version check to determine if >= 10.14, where metal is the target renderer
+ifeq ($(UNAME_S), Darwin)
+	CFLAGS += -framework OpenGL -framework GLUT
+endif
+
 EXE=banter
 CC=gcc
 SRC := $(wildcard src/*.c)

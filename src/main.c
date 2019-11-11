@@ -18,23 +18,25 @@ int main(int argc, char * argv[]) {
       id, and the ability to detect by ID (enum)
     */
     struct banter_state *state = cli_getstate_fromargs(argc, argv);
-    
-    /* construct banter data object */
-    struct banter_data data;
+
+    /* set argc & argv */
+    state->argc = argc;
+    state->argv = argv;
 
     /* prepare our data object for reading */
-    core_getdata_obj_withstate(state, &data);
-    
+    core_getdata_obj_withstate(state, state->data);
+
     /* start CLI loop */
-    cli_ui_loop(state, &data);
-    
-    /* clear and free state */
-    state_clear_state(state);
-    free(state);
-    state = NULL;
-    
-    /* clear data */
-    data_clear_data(&data);
+    cli_ui_loop(state, state->data);
+
+
+    if(state != NULL) {
+      /* clear and free state */
+      state_clear_state(state);
+      free(state);
+      state = NULL;
+
+    }
 
     return 0;
 }

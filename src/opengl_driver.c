@@ -141,7 +141,21 @@ void _opengl_driver_mac_display() {
   }
   glEnd();
 
-  /* Draw Axis */
+  /* Draw Axis for debugging */
+  glBegin(GL_LINES);
+  /* along x */
+  glColor3f(1,0,0);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(10.0, 0.0, 0.0);
+  /* along y */
+  glColor3f(0,1,0);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(0.0, 10.0, 0.0);
+  /* along z */
+  glColor3f(0,0,1);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(0.0, 0.0, 10.0);
+  glEnd();
 
 
   /* draw summary info text */

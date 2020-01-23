@@ -1,29 +1,20 @@
 # TODOs
+- implement 4D cube (4th dimension scales, hyper cube...)
 - fix color bias (in strips, but should be in grids)
-- scale bugs
+- scale bugs (do we really want scale though???)
   - fix issue with shifting scale in gui causes redraw of pixels at similar z offsets
   - memory needs to be resized, and sizes need to be standardized for scale of > 1
 - implement the following renderings
     - NOTE, near ZERO 'y' progression shows a flat unit that looks a LOT like something from cantor dust (distributions...)
     - cylindrical progression
-    - spherical representation
-        - shell representation (sphere in sphere in sphere perhaps for different models???)
-        - may happen naturally however...
-    - protein chain building
-    - z-chain building
-    - standard rendering, but with byte counts incremented for every 'hit' on a 256x256 grid (frequency counter)
+    - spherical shell progression representation
+        - shells in shells, expanding outwards, use the existing one to make it work
+    - protein chain building (from before, but without bug)
+    - z-chain building (chaining is valid)
+    - byte x byte histogram (progression along y/z for each 'hit' in the grid)
     - hilbert curve
         - 2D
         - 3D
-- show menu keys for selecting all available colorings
-    - same deal...
-- move visual 50/50 into the MIDDLE of the screen, starts and ends at the ends, rather than the middle (easier to focus then)
 - menu key for file to read from
-- BUG, dynamically reassigned targets do not get set??? (we can double check this...)
-- outputter
-  - implement STDOUT connection (just to stdout, will need to set this up if needed)
-  - implement STREAM connection (to resource)
 - cli
-  - setup loaddatamaps in cli_getstate_fromargs
-  - setup colormap in cli_getstate_fromargs
   - add proper error handling for a missing state in cli_verify_state

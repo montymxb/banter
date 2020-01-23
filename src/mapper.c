@@ -52,43 +52,64 @@ void mapper_spherical_3d_location_mapping(struct banter_data *data) {
 	long x;
 	double radius = 0.0;
 	double twoPi = 2.0 * PI;
+	double radiusIncrement = 0.1;
+
 	for(x = 0; x < data->count; x+=data->scale) {
 
 		/* calculate z along shell */
 		if(x > 1) {
+			/* 3 data points, place a point on the shell of sphere of radius 'radius' */
 
-			/* place a point on the shell of sphere of radius 'radius' */
-			double dataVal1 = data->og_data[x] / 128.0;
-			double dataVal2 = data->og_data[x-1] / 128.0;
-			data->xLocations[x] = radius * cos(dataVal1 * twoPi);
-			data->yLocations[x] = radius * sin(dataVal2 * twoPi);
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
 
-			double cosVal = cos(data->og_data[x-2] / 128.0 * twoPi);
-			double sinVal = sin(data->og_data[x-2] / 128.0 * twoPi);
+			/* calculate z off of the 2nd point */
+			double cosVal = cos(data->og_data[x-1] / 128.0 * twoPi);
+			double sinVal = sin(data->og_data[x-1] / 128.0 * twoPi);
 
 			/* use cos for calculating z location */
-			data->zLocations[x] = radius * cosVal;
+			data->zLocations[x] = radius * sinVal;
 
 			/* use sin (inverse) to calculate how to adjust x & y for sphere */
-			data->yLocations[x] = fabs(sinVal) * data->yLocations[x];
-			data->xLocations[x] = fabs(sinVal) * data->xLocations[x];
+			data->yLocations[x] = fabs(cosVal) * data->yLocations[x];
+			data->xLocations[x] = fabs(cosVal) * data->xLocations[x];
+
+			/* scale all off of 3rd point */
+			double scale = (data->og_data[x-2] / 128.0 + 1.0) / 2.0;
+			data->xLocations[x]*=scale;
+			data->yLocations[x]*=scale;
+			data->zLocations[x]*=scale;
 
 		} else if(x > 0) {
-			/* just x & y */
-			double dataVal1 = data->og_data[x] / 128.0;
-			double dataVal2 = data->og_data[x-1] / 128.0;
-			data->xLocations[x] = radius * cos(dataVal1 * twoPi);
-			data->yLocations[x] = radius * sin(dataVal2 * twoPi);
-			data->zLocations[x] = 0.0;
+			/* just x & y, 2 points, no z movement here */
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
+
+			/* calculate z off of the 2nd point */
+			double cosVal = cos(data->og_data[x-1] / 128.0 * twoPi);
+			double sinVal = sin(data->og_data[x-1] / 128.0 * twoPi);
+
+			/* use cos for calculating z location */
+			data->zLocations[x] = radius * sinVal;
+
+			/* use sin (inverse) to calculate how to adjust x & y for sphere */
+			data->yLocations[x] = fabs(cosVal) * data->yLocations[x];
+			data->xLocations[x] = fabs(cosVal) * data->xLocations[x];
 
 		} else {
-			/* 1st point */
-			data->xLocations[x] = 0.0;
-			data->yLocations[x] = 0.0;
+			/* 1st point, put at center */
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
+
+			/* no z change */
 			data->zLocations[x] = 0.0;
+
 		}
 
-		radius+=0.1;
+		radius+=radiusIncrement;
 
 	}
 }
@@ -116,6 +137,300 @@ void mapper_cube_location_mapping(struct banter_data *data) {
 			data->zLocations[x] = 0.0;
 
 		}
+	}
+}
+
+
+/* 4d cube mapping */
+void mapper_cube_4d_location_mapping(struct banter_data *data) {
+	double offset = 0.0;
+	for(int x = 0; x < data->count; x++) {
+		if(x > 1) {
+			/* rest of runs */
+			data->xLocations[x] = data->og_data[x] + offset;
+			data->yLocations[x] = data->og_data[x-1] + offset;
+			data->zLocations[x] = data->og_data[x-2] + offset;
+
+		} else if(x > 0) {
+			/* second */
+			data->xLocations[x] = data->og_data[x] + offset;
+			data->yLocations[x] = data->og_data[x-1] + offset;
+			data->zLocations[x] = offset;
+
+		} else {
+			/* initial */
+			data->xLocations[x] = data->og_data[x] + offset;
+			data->yLocations[x] = offset;
+			data->zLocations[x] = offset;
+
+		}
+		offset+=0.01;
+	}
+}
+
+
+/* maps locations into fixed spherical shells, without changing the radius over time */
+void mapper_spherical_shells_location_mapping(struct banter_data *data) {
+	long x;
+	double radius = 100.0;
+	double twoPi = 2.0 * PI;
+
+	for(x = 0; x < data->count; x+=data->scale) {
+
+		/* calculate z along shell */
+		if(x > 1) {
+			/* 3 data points, place a point on the shell of sphere of radius 'radius' */
+
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
+
+			/* calculate z off of the 2nd point */
+			double cosVal = cos(data->og_data[x-1] / 128.0 * twoPi);
+			double sinVal = sin(data->og_data[x-1] / 128.0 * twoPi);
+
+			/* use cos for calculating z location */
+			data->zLocations[x] = radius * sinVal;
+
+			/* use sin (inverse) to calculate how to adjust x & y for sphere */
+			data->yLocations[x] = fabs(cosVal) * data->yLocations[x];
+			data->xLocations[x] = fabs(cosVal) * data->xLocations[x];
+
+			/* scale all off of 3rd point */
+			double scale = (data->og_data[x-2] / 128.0 + 1.0) / 2.0;
+			data->xLocations[x]*=scale;
+			data->yLocations[x]*=scale;
+			data->zLocations[x]*=scale;
+
+		} else if(x > 0) {
+			/* just x & y, 2 points, no z movement here */
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
+
+			/* calculate z off of the 2nd point */
+			double cosVal = cos(data->og_data[x-1] / 128.0 * twoPi);
+			double sinVal = sin(data->og_data[x-1] / 128.0 * twoPi);
+
+			/* use cos for calculating z location */
+			data->zLocations[x] = radius * sinVal;
+
+			/* use sin (inverse) to calculate how to adjust x & y for sphere */
+			data->yLocations[x] = fabs(cosVal) * data->yLocations[x];
+			data->xLocations[x] = fabs(cosVal) * data->xLocations[x];
+
+		} else {
+			/* 1st point, put at center */
+			/* calculate x & y off the 1st point */
+			data->xLocations[x] = radius * cos(data->og_data[x] / 128.0 * twoPi);
+			data->yLocations[x] = radius * sin(data->og_data[x] / 128.0 * twoPi);
+
+			/* no z change */
+			data->zLocations[x] = 0.0;
+
+		}
+
+	}
+}
+
+long hilbert_index = 0;
+/* 2D hilbert definition */
+void __hilbert(double x, double y, double xi, double xj, double yi, double yj, int n, struct banter_data *data) {
+	if(hilbert_index > data->count-1) {
+		// no more calls from here
+		return;
+
+	}
+
+	if(n <= 0) {
+		data->xLocations[hilbert_index] = (x + (xi + yi)/2.0) * 255.0;
+		data->zLocations[hilbert_index] = (y + (xj + yj)/2.0) * 255.0;
+		data->yLocations[hilbert_index++] = 0.0;
+
+	} else {
+		__hilbert(x 									, y 									, yi/2.0	, yj/2.0	, xi/2.0	, xj/2.0	, n-1, data);
+		__hilbert(x + xi/2.0					, y + xj/2.0					, xi/2.0	, xj/2.0	, yi/2.0	, yj/2.0	, n-1, data);
+		__hilbert(x + xi/2.0 + yi/2.0	, y + xj/2.0 + yj/2.0	, xi/2.0	, xj/2.0	, yi/2.0	, yj/2.0	, n-1, data);
+		__hilbert(x + xi/2.0 + yi			, y + xj/2.0 + yj			, -yi/2.0	, -yj/2.0	, -xi/2.0	, -xj/2.0	, n-1, data);
+
+	}
+}
+
+
+/* 2D hilbert curve imaging */
+void mapper_hilbert_curve_2d_location_mapping(struct banter_data *data) {
+	// number of repetitions
+	int n = 1;
+
+	// zero out static hilbert index
+	hilbert_index = 0;
+
+	// advance hilbert count until it's enough
+	while(pow(4,n) < data->count) {
+		n++;
+	}
+
+	// start the hilbert curve
+	__hilbert(
+		0.0,0.0,	// starting X & Y bottom left
+		1.0,0.0		// X unit vector
+		,0.0,1.0	// Y unit vector
+		,n,data	// number of iterations & data
+	);
+}
+
+
+/* 3D hilbert definition*/
+/* TODO fix this up later... */
+void __hilbert3d(
+	double x, double y, double z,
+	double xi, double xj, double xk,
+	double yi, double yj, double yk,
+	double zi, double zj, double zk,
+	int n, struct banter_data *data
+) {
+
+	if(hilbert_index > data->count-1) {
+		// no more calls from here
+		return;
+
+	}
+
+	if(n <= 0) {
+		data->xLocations[hilbert_index] 	= (x + (xi + yi + zi)/2.0) * 255.0;
+		data->yLocations[hilbert_index] 	= (y + (xj + yj + zj)/2.0) * 255.0;
+		data->zLocations[hilbert_index++] = (z + (xk + yk + zk)/2.0) * 255.0;
+
+	} else {
+
+		/*
+		glVertex3d(x-t,y-t,z); glVertex3d(x+t,y+t,z);
+    glVertex3d(x+t,y-t,z); glVertex3d(x-t,y+t,z);
+
+    glVertex3d(x,y-t,z-t); glVertex3d(x,y+t,z+t);
+    glVertex3d(x,y-t,z+t); glVertex3d(x,y+t,z-t);
+
+    glVertex3d(x-t,y,z-t); glVertex3d(x+t,y,z+t);
+    glVertex3d(x+t,y,z-t); glVertex3d(x-t,y,z+t);
+		*/
+
+		// 1st 4 in regular Z coords
+		__hilbert3d(
+			x, y, z,
+			yi/2.0, yj/2.0, yk/2.0,
+			xi/2.0, xj/2.0, xk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0, y + xj/2.0, z + xk/2.0,
+			xi/2.0, xj/2.0, xk/2.0,
+			yi/2.0, yj/2.0, yk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0 + yi/2.0, y + xj/2.0 + yj/2.0, z + xk/2.0 + yk/2.0 + zk/2.0,
+			xi/2.0, xj/2.0, xk/2.0,
+			yi/2.0, yj/2.0, yk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0 + yi, y + xj/2.0 + yj, z + xk/2.0 + yk,
+			-yi/2.0, -yj/2.0, -yk/2.0,
+			-xi/2.0, -xj/2.0, -xk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+	}
+}
+
+
+/* 3D hilbert curve imaging */
+void mapper_hilbert_curve_3d_location_mapping(struct banter_data *data) {
+	// number of repetitions
+	int n = 1;
+
+	// zero out static hilbert index
+	hilbert_index = 0;
+
+	// advance hilbert count until it's enough
+	while(pow(4,n) < data->count) {
+		n++;
+	}
+
+	// start the hilbert curve
+	__hilbert3d(
+		0.0,0.0,0.0,		// starting X,Y,Z at origin
+		1.0, 0.0, 0.0,	// X unit vector
+		0.0, 1.0, 0.0,	// Y unit vector
+		0.0, 0.0, 1.0, 	// Z unit vector
+		n,data					// number of iterations & data
+	);
+
+}
+
+
+/* 3d chain mapping */
+void mapper_chain_location_mapping(struct banter_data *data) {
+	long x;
+
+	/* zero out the 1st entry */
+	data->xLocations[0] = 0.0;
+	data->yLocations[0] = 0.0;
+	data->zLocations[0] = 0.0;
+
+	double xx,yy,zz;
+	xx = yy = zz = 0.0;
+	double offset = 0.01;
+
+	for(x = 2; x < data->count; x+=data->scale) {
+		// add new changes
+		//xx += data->og_data[x];
+		//yy += data->og_data[x-1];
+		//zz += data->og_data[x-2];
+
+		if(data->og_data[x] & 1) {
+			xx += offset;
+		}
+
+		if(data->og_data[x] & 2) {
+			yy += offset;
+		}
+
+		if(data->og_data[x] & 4) {
+			zz += offset;
+		}
+
+		if(data->og_data[x] & 8) {
+			xx -= offset;
+		}
+
+		if(data->og_data[x] & 16) {
+			yy -= offset;
+		}
+
+		if(data->og_data[x] & 32) {
+			zz -= offset;
+		}
+
+		if(data->og_data[x] & 64) {
+			// do nothing?
+		}
+
+		if(data->og_data[x] & 128) {
+			// do nothing?
+		}
+
+		// update locations
+		data->xLocations[x] = xx;
+		data->yLocations[x] = yy;
+		data->zLocations[x] = zz;
 	}
 }
 
@@ -231,18 +546,7 @@ void mapper_3d_value_color_mapping(struct banter_data *data) {
 			data->gColors[x] = 0.0;
 			data->bColors[x] = 0.0;
 
-		}/* else if(x > 0) {
-			data->rColors[x] = (data->og_data[x] + 128.0) / 256.0;
-			data->gColors[x] = (data->og_data[x-1] + 128.0) / 256.0;
-			data->bColors[x] = 0.0;
-
-		} else {
-			data->rColors[x] = (data->og_data[x] + 128.0) / 256.0;
-			data->gColors[x] = 0.0;
-			data->bColors[x] = 0.0;
-
 		}
-		*/
 	}
 }
 

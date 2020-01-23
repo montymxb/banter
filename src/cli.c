@@ -198,7 +198,11 @@ struct banter_state *cli_get_fresh_state() {
   state_add_location_mapping(index++, LOC_MAP_SPHERICAL_2D, &mapper_spherical_2d_location_mapping, state);
   state_add_location_mapping(index++, LOC_MAP_SPHERICAL_3D, &mapper_spherical_3d_location_mapping, state);
   state_add_location_mapping(index++, LOC_MAP_CUBE, &mapper_cube_location_mapping, state);
-
+  state_add_location_mapping(index++, LOC_MAP_CUBE_4D, &mapper_cube_4d_location_mapping, state);
+  state_add_location_mapping(index++, LOC_MAP_SPHERICAL_SHELLS, &mapper_spherical_shells_location_mapping, state);
+  state_add_location_mapping(index++, LOC_CHAIN, &mapper_chain_location_mapping, state);
+  state_add_location_mapping(index++, LOC_HILBERT_2D, &mapper_hilbert_curve_2d_location_mapping, state);
+  state_add_location_mapping(index++, LOC_HILBERT_3D, &mapper_hilbert_curve_3d_location_mapping, state);
 
   /* setup color mapping for defaults */
   state->color_mappings_count = COLORINGS_COUNT;

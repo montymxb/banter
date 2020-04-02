@@ -7,7 +7,20 @@ _** This version of banter is an in progress C rework of an existing program tha
 
 Banter is a tool for visualizing data independent of underlying structure. This allow for visual identification, classificiation and comparison of known and unknown structures by their visual signature.
 
-<img width="500" src="https://github.com/montymxb/banter/blob/master/images/s2.jpg"></img>
+The following is a low quality gif, but it demonstrates a visual analysis approach to looking at a php 7.3.11 binary on OSX.
+<img width="500" src="https://github.com/montymxb/banter/blob/master/images/b1.gif"></img>
+A brief demonstration of banter browsing through the initial part of the binary.
+
+<img width="500" src="https://github.com/montymxb/banter/blob/master/images/b2.gif"></img>
+A rotation around a portion that is shown to have predominantly ascii characters, evidenced by the signature white blocks in one specific area of the cube.
+
+<img width="500" src="https://github.com/montymxb/banter/blob/master/images/b3.gif"></img>
+Visualization of a structurally significant area within the later part of the PHP binary. Notice the change from ascii to a large block of data (possibly compressed), being followed by what appears to be a regular table structure of some sort.
+
+<img width="500" src="https://github.com/montymxb/banter/blob/master/images/b4.gif"></img>
+Same portion being visualized using a spherical shell approach.
+
+There are about 7 useful mappings (such as the cube mapping and the spherical shell one shown), with some additional other ones that need some additional work.
 
 ## Why use banter?
 

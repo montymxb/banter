@@ -42,9 +42,6 @@ This will produce a binary in the **build** folder called **banter**.
 ## Using banter.
 
 Banter can be targeted onto a file to provide visual analysis of the underlying structure. I also have an interest in targetting processes to visualize instructions loaded in memory, the stack, the heap, and all additionally loaded components in their respective memory mappings.
-```
-
-```
 
 ### Getting started
 

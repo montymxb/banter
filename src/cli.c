@@ -211,6 +211,11 @@ struct banter_state *cli_get_fresh_state() {
   state_add_color_mapping(index++, COL_MAP_3D_VALUE, &mapper_3d_value_color_mapping, state);
   state_add_color_mapping(index++, COL_MAP_POSITIONAL, &mapper_positional_color_mapping, state);
   state_add_color_mapping(index++, COL_MAP_ENTROPY, &mapper_entropy_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_SEQUENCE, &mapper_sequence_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_UPPER, &mapper_upper_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_LOWER, &mapper_lower_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_READABLE, &mapper_readable_color_mapping, state);
+  state_add_color_mapping(index++, COL_MAP_SLOPE, &mapper_slope_color_mapping, state);
 
   /* generate fresh data */
   state->data = (struct banter_data*)malloc(sizeof(struct banter_data));

@@ -245,7 +245,8 @@ void __hilbert(double x, double y, double xi, double xj, double yi, double yj, i
 	if(n <= 0) {
 		data->xLocations[hilbert_index] = (x + (xi + yi)/2.0) * 255.0;
 		data->zLocations[hilbert_index] = (y + (xj + yj)/2.0) * 255.0;
-		data->yLocations[hilbert_index++] = 0.0;
+		data->yLocations[hilbert_index] = data->og_data[hilbert_index] / 32.0; // 32.0
+		hilbert_index++;
 
 	} else {
 		__hilbert(x 									, y 									, yi/2.0	, yj/2.0	, xi/2.0	, xj/2.0	, n-1, data);
@@ -272,7 +273,7 @@ void mapper_hilbert_curve_2d_location_mapping(struct banter_data *data) {
 
 	// start the hilbert curve
 	__hilbert(
-		0.0,0.0,	// starting X & Y bottom left
+		-0.5,-0.5,	// starting X & Y bottom left
 		1.0,0.0		// X unit vector
 		,0.0,1.0	// Y unit vector
 		,n,data	// number of iterations & data
@@ -406,7 +407,7 @@ void mapper_hilbert_curve_3d_location_mapping(struct banter_data *data) {
 
 	// start the hilbert curve
 	__hilbert3d(
-		0.0,0.0,0.0,		// starting X,Y,Z at origin
+		-0.5,-0.5,-0.5,		// starting X,Y,Z at origin
 		1.0, 0.0, 0.0,	// X unit vector
 		0.0, 1.0, 0.0,	// Y unit vector
 		0.0, 0.0, 1.0, 	// Z unit vector
@@ -489,42 +490,22 @@ void mapper_value_color_mapping(struct banter_data *data) {
 
 		}
 
-		// 85.3 range
-		if(val <= -84) {
-			/* lowest, red hues */
-			data->rColors[x] = 1.0;
-			data->gColors[x] = colorVal;
-			data->bColors[x] = 1.0 - colorVal;
+		// shifting RGB color range
+		// makes no assumptions about interpretation of underlying values
+		if(colorVal < 0.333) {
+			data->rColors[x] = 1.0 - colorVal * 3.333;
+			data->gColors[x] = colorVal * 3.333;
+			data->bColors[x] = 0.0;
 
-		} else if(val <= -42) {
-			/* low triad, red hues */
-			data->rColors[x] = 1.0;
-			data->gColors[x] = 1.0 - colorVal;
-			data->bColors[x] = colorVal;
-
-		} else if(val <= 0) {
-			/* mid symbols, green hues */
-			data->rColors[x] = colorVal;
-			data->gColors[x] = 1.0;
-			data->bColors[x] = 1.0 - colorVal;
-
-		} else if(val <= 44) {
-			/* mid symbols, green hues */
-			data->rColors[x] = 1.0 - colorVal;
-			data->gColors[x] = 1.0;
-			data->bColors[x] = colorVal;
-
-		} else if(val <= 88) {
-			/* upper symbols, english, mostly... */
-			data->rColors[x] = 1.0 - colorVal;
-			data->gColors[x] = colorVal;
-			data->bColors[x] = 1.0;
+		} else if(colorVal < 0.666) {
+			data->rColors[x] = 0.0;
+			data->gColors[x] = 1.0 - (colorVal - 0.333) * 3.333;
+			data->bColors[x] = (colorVal - 0.333) * 3.333;
 
 		} else {
-			/* upper symbols, english, mostly... */
-			data->rColors[x] = colorVal;
-			data->gColors[x] = 1.0 - colorVal;
-			data->bColors[x] = 1.0;
+			data->rColors[x] = (colorVal - 0.666) * 3.333;
+			data->gColors[x] = 0.0;
+			data->bColors[x] = 1.0 - (colorVal - 0.666) * 3.333;
 
 		}
 
@@ -543,7 +524,7 @@ void mapper_positional_color_mapping(struct banter_data *data) {
 }
 
 
-/* Colors based on variance in values */
+/* Colors based on variance in values (red = variance, green = homogenicity) */
 void mapper_entropy_color_mapping(struct banter_data *data) {
 	long x;
 	double variance = 0.0;
@@ -583,6 +564,91 @@ void mapper_3d_value_color_mapping(struct banter_data *data) {
 
 		} else {
 			data->rColors[x] = 0.0;
+			data->gColors[x] = 0.0;
+			data->bColors[x] = 0.0;
+
+		}
+	}
+}
+
+/* Color drags by sequence, accounting for change (and lack there of, over time) */
+void mapper_sequence_color_mapping(struct banter_data *data) {
+	double c = 0.5;
+	for(int x = 0; x < data->count; x++) {
+		c += ((data->og_data[x] / 128.0)) * 0.1;
+
+		// cap it off so we don't float out of bounds
+		if(c < 0.0) {
+			c = 0.0;
+		} else if(c > 1.0) {
+			c = 1.0;
+		}
+
+		data->rColors[x] = c;
+		data->gColors[x] = c;
+		data->bColors[x] = c;
+	}
+}
+
+/* Highlights the upper ASCII range */
+void mapper_upper_color_mapping(struct banter_data *data) {
+	double c;
+	for(int x = 0; x < data->count; x++) {
+		if(data->og_data[x] >= 0.0) {
+			c = 1.0;
+		} else {
+			c = 0.2;
+		}
+
+		data->rColors[x] = data->gColors[x] = data->bColors[x] = c;
+	}
+}
+
+/* Highlights the lower ASCII range */
+void mapper_lower_color_mapping(struct banter_data *data) {
+	double c;
+	for(int x = 0; x < data->count; x++) {
+		if(data->og_data[x] >= 0.0) {
+			c = 0.2;
+		} else {
+			c = 1.0;
+		}
+
+		data->rColors[x] = data->gColors[x] = data->bColors[x] = c;
+	}
+}
+
+/* Highlights the readable ASCII range in blue */
+void mapper_readable_color_mapping(struct banter_data *data) {
+	double c;
+	for(int x = 0; x < data->count; x++) {
+		if(data->og_data[x] >= 32 && data->og_data[x] < 127) {
+			c = 1.0;
+		} else {
+			c = 0.2;
+		}
+
+		data->rColors[x] = 0.0;
+		data->gColors[x] = c;
+		data->bColors[x] = c;
+	}
+}
+
+/* Measures the slope between characters */
+void mapper_slope_color_mapping(struct banter_data *data) {
+	double slope = 0.0;
+	for(int x = 0; x < data->count; x++) {
+		if(x > 0) {
+			slope = (data->og_data[x] - data->og_data[x-1]) / 128.0;
+		}
+
+		if(slope < 0.0) {
+			data->rColors[x] = -slope;
+			data->gColors[x] = 0.0;
+			data->bColors[x] = 0.0;
+
+		} else {
+			data->rColors[x] = slope;
 			data->gColors[x] = 0.0;
 			data->bColors[x] = 0.0;
 

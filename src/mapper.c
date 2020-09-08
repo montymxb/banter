@@ -314,6 +314,13 @@ void __hilbert3d(
     glVertex3d(x+t,y,z-t); glVertex3d(x-t,y,z+t);
 		*/
 
+		// generate a small x/y noise to break up the moiré pattern
+		double rx = (rand() % 100) / 10000.0;
+		double ry = (rand() % 100) / 10000.0;
+
+		x += rx;
+		y += ry;
+
 		// 1st 4 in regular Z coords
 		__hilbert3d(
 			x, y, z,
@@ -324,7 +331,7 @@ void __hilbert3d(
 		);
 
 		__hilbert3d(
-			x + xi/2.0, y + xj/2.0, z + xk/2.0,
+			x + xi/2.0, y + xj/2.0, z, // + xk/2.0
 			xi/2.0, xj/2.0, xk/2.0,
 			yi/2.0, yj/2.0, yk/2.0,
 			zi/2.0, zj/2.0, zk/2.0,
@@ -332,7 +339,7 @@ void __hilbert3d(
 		);
 
 		__hilbert3d(
-			x + xi/2.0 + yi/2.0, y + xj/2.0 + yj/2.0, z + xk/2.0 + yk/2.0 + zk/2.0,
+			x + xi/2.0 + yi/2.0, y + xj/2.0 + yj/2.0, z, // + xk/2.0 + yk/2.0 + zk/2.0
 			xi/2.0, xj/2.0, xk/2.0,
 			yi/2.0, yj/2.0, yk/2.0,
 			zi/2.0, zj/2.0, zk/2.0,
@@ -340,7 +347,40 @@ void __hilbert3d(
 		);
 
 		__hilbert3d(
-			x + xi/2.0 + yi, y + xj/2.0 + yj, z + xk/2.0 + yk,
+			x + xi/2.0 + yi, y + xj/2.0 + yj, z, // + xk/2.0 + yk
+			-yi/2.0, -yj/2.0, -yk/2.0,
+			-xi/2.0, -xj/2.0, -xk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		// next 4 in adjusted Z coordinates
+		__hilbert3d(
+			x, y, z + zk/2.0,
+			yi/2.0, yj/2.0, yk/2.0,
+			xi/2.0, xj/2.0, xk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0, y + xj/2.0, z + zk/2.0, // + xk/2.0
+			xi/2.0, xj/2.0, xk/2.0,
+			yi/2.0, yj/2.0, yk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0 + yi/2.0, y + xj/2.0 + yj/2.0, z + zk/2.0, // + xk/2.0 + yk/2.0 + zk/2.0
+			xi/2.0, xj/2.0, xk/2.0,
+			yi/2.0, yj/2.0, yk/2.0,
+			zi/2.0, zj/2.0, zk/2.0,
+			n-1, data
+		);
+
+		__hilbert3d(
+			x + xi/2.0 + yi, y + xj/2.0 + yj, z + zk/2.0, // + xk/2.0 + yk
 			-yi/2.0, -yj/2.0, -yk/2.0,
 			-xi/2.0, -xj/2.0, -xk/2.0,
 			zi/2.0, zj/2.0, zk/2.0,
@@ -360,7 +400,7 @@ void mapper_hilbert_curve_3d_location_mapping(struct banter_data *data) {
 	hilbert_index = 0;
 
 	// advance hilbert count until it's enough
-	while(pow(4,n) < data->count) {
+	while(pow(8,n) < data->count) {
 		n++;
 	}
 

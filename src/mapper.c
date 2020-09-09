@@ -490,7 +490,9 @@ void mapper_value_color_mapping(struct banter_data *data) {
 
 		}
 
-		// shifting RGB color range
+		// shifting R -> G -> B color range
+		// Where R represents the lowest & highest value
+		// then to Green in the bottom 3rd, then blue in the upper 3rd
 		// makes no assumptions about interpretation of underlying values
 		if(colorVal < 0.333) {
 			data->rColors[x] = 1.0 - colorVal * 3.333;

@@ -177,16 +177,18 @@ struct banter_state *cli_get_fresh_state() {
   state->resource = NULL;
   /* no valid output target to write to by default */
   state->out_target[0] = '\0';
-  /* default mapping id */
-  strcpy(state->mapping_location_id, LOC_MAP_CUBE);
-  /* default color id */
-  strcpy(state->mapping_color_id, COL_MAP_3D_VALUE);
-  /* default stride of 1 byte */
-  state->stride = 1;
+  /* default mapping id (2D Hilbert Curve) */
+  strcpy(state->mapping_location_id, LOC_HILBERT_2D);
+  /* default color id (Literal Value interpolated over an RGB spectrum) */
+  strcpy(state->mapping_color_id, COL_MAP_VALUE);
+  /* default stride of 262144 bytes (2^18) */
+  state->stride = 262144;
   /* default offset of 0 bytes */
   state->offset = 0;
   /* default scale of 1 point:1 byte */
   state->scale = 1;
+  /* default is to start rotating */
+  state->rotate = 1;
   /* set defaults for renderer, which will be set if used */
   state->renderer.is_ready = 0;
   cli_assign_outmode(state, "render");

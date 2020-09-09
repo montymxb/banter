@@ -97,6 +97,9 @@ struct banter_state {
   ex. 2:1, 2 bytes per point */
   int scale;
 
+  /* Whether or not to rotate the model, defaults to 0 */
+  int rotate;
+
   /*
   Mode for sending output
   0 = renderer

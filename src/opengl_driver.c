@@ -25,6 +25,9 @@ output(char *text)
 }
 
 
+double tRot = 0.0;
+
+
 /* display for mac */
 void _opengl_driver_mac_display() {
 	/* TODO setup */
@@ -42,14 +45,19 @@ void _opengl_driver_mac_display() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(
-    -10.0, 0.0, 0.0,  /* eye */
+    -10.0, 10.0, 0.0,  /* eye */
     0.0, 0.0, 0.0,   /* center */
     0.0, 1.0, 0.    /* up is in positive Y direction */
   );
 
   glTranslatef(0.0, opengl_state.eyeY, opengl_state.eyeX);
 
-  glRotatef( (GLfloat)opengl_state.rotateY, 0., 1., 0. );
+  if(opengl_banter_state->rotate == 1) {
+    // start shifting the camera angle
+    tRot+=0.5;
+  }
+
+  glRotatef( (GLfloat)opengl_state.rotateY + tRot, 0., 1., 0. );
   glRotatef( (GLfloat)opengl_state.rotateX, 1., 0., 0. );
 
   //if( Scale < MINSCALE )
@@ -335,9 +343,16 @@ void _opengl_driver_mac_keyboard(unsigned char c, int x, int y) {
       core_update_banter_state(opengl_banter_state);
       break;
 
+    /* spin cases */
+    case 's':
+    case 'S':
+      opengl_banter_state->rotate = opengl_banter_state->rotate == 1 ? 0 : 1;
+      break;
+
     /* shutdown cases */
     case 'q':
     case 'Q':
+
     /* escape keycode */
     case 0x1b:
       /* quit */
@@ -635,6 +650,7 @@ void _opengl_driver_mac_setup_state() {
   opengl_state.mouseY     = 0;
   opengl_state.rotateX    = 0.0;
   opengl_state.rotateY    = 0.0;
+  opengl_state.rotate     = 1; /* rotate at the start */
   opengl_state.scale      = 1.0;
   opengl_state.offsetStep = 1;
   /* set default eye position */

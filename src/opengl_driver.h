@@ -40,6 +40,8 @@ struct OpenGL_State {
   float eyeY;
   /* current draw mode */
   GLenum drawMode;
+  /* whether or not to rotate the model */
+  int rotate;
 };
 
 void opengl_driver_start(struct banter_state *state);

@@ -22,6 +22,10 @@ Visualization of a structurally significant area within the later part of the PH
 <img width="500" src="https://github.com/montymxb/banter/blob/master/images/b4.gif"></img>
 <br/>
 Same portion being visualized using a spherical shell approach.
+<br/>
+<img width="500" src="https://github.com/montymxb/banter/blob/master/images/s4.png"></img>
+<br/>
+The initial portion of a pdf generated from pdflatex.
 
 There are about 7 useful mappings (such as the cube mapping and the spherical shell one shown), with some additional other ones that need some additional work.
 
